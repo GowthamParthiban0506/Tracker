@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Tamil:wght@400;500;600;700;800&family=Noto+Serif+Tamil:wght@500;700&display=swap" rel="stylesheet">
+<title>Tracker</title>
+<style>
+:root{--ink:#1F1B3A;--teal:#5646E0;--teal-d:#4335B8;--gold:#FFB224;--bg:#F6F4FF;--card:#fff;--line:#E6E2F7;--ok:#0F8F5F;--bad:#D33F52;--muted:#6E6A93}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Anek Tamil','Noto Sans Tamil','Latha','Nirmala UI','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:18px;line-height:1.5}
+.wrap{max-width:1150px;margin:0 auto}
+input,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff;color:var(--ink)}
+input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+textarea{resize:vertical}button{font:inherit;cursor:pointer}
+.btn{background:var(--teal);color:#fff;border:0;border-radius:6px;padding:10px 14px;font-weight:600;width:100%}
+.btn:hover{background:var(--teal-d)}.btn.ok{background:var(--ok)}.btn.bad{background:var(--bad)}.btn.gold{background:var(--gold);color:var(--ink)}
+.btn.auto{width:auto}
+.row{display:flex;gap:10px}.field{margin-bottom:14px}
+.field label{display:block;font-weight:600;font-size:14px;margin-bottom:5px}
+.screen{display:none}.screen.on{display:block}
+
+/* Home */
+.hero{background:var(--ink);color:#fff;border-radius:12px;padding:56px 28px;text-align:center;margin-bottom:20px}
+.hero h1{font-size:clamp(34px,8vw,64px);font-weight:800;letter-spacing:2px;margin-bottom:26px}
+.hero p{color:#C9C3F0;max-width:560px;margin:12px auto 26px}
+.hero .btn{max-width:260px;font-size:17px;padding:13px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.tile{background:var(--card);border:1px solid var(--line);border-top:5px solid var(--gold);border-radius:10px;padding:20px}
+.tile h3{font-size:22px;font-weight:800;margin-bottom:6px}.tile p{font-size:14px;color:var(--muted)}
+
+/* Login */
+#auth{max-width:400px;margin:80px auto;background:var(--card);padding:32px;border-radius:10px;border-top:5px solid var(--gold);box-shadow:0 8px 24px rgba(31,27,58,.12)}
+#auth h1{font-size:30px;font-weight:800;text-align:center;margin-bottom:22px;letter-spacing:1px}
+#err{display:none;background:#fdecea;color:var(--bad);border:1px solid #f3b9b3;border-radius:6px;padding:10px;font-size:13px;font-weight:600;text-align:center;margin-bottom:14px}
+.pw{position:relative}.pw input{padding-right:70px}
+.pw button{position:absolute;right:6px;top:6px;bottom:6px;border:0;background:#ECE9FB;color:var(--teal-d);border-radius:4px;padding:0 10px;font-size:12px;font-weight:700}
+.link{background:none;border:0;color:var(--teal);margin-top:14px;width:100%;text-decoration:underline}
+
+/* Captcha */
+.cap{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.cap canvas{flex:1;min-width:0;max-width:100%;height:48px;border:1px solid var(--line);border-radius:6px;background:#F6F4FF;user-select:none}
+.cap button{border:0;background:#ECE9FB;color:var(--teal-d);border-radius:6px;width:44px;height:48px;font-size:20px;font-weight:700}
+.cap button:hover{background:#DDD8F5}
+
+/* App */
+header{background:var(--ink);color:#fff;border-radius:10px;padding:22px 24px;margin-bottom:14px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.top h1{font-size:22px}.top p{color:#C9C3F0;font-size:13px}
+.top .row{gap:8px}
+.top button{border-radius:6px;padding:7px 14px;font-size:13px;font-weight:600;border:0}
+#save{background:var(--gold);color:var(--ink)}
+#logout{background:transparent;border:1px solid #7F78C9;color:#fff}
+.bar{background:#3A3380;border-radius:8px;height:12px;margin:14px 0 6px;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--gold);transition:width .4s}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:9px 16px;font-weight:600;color:var(--ink)}
+.tab.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.tabs.sub{margin-top:-4px;padding-left:12px;border-left:4px solid var(--gold)}
+.tabs.sub .tab{padding:7px 14px;font-size:14px;background:var(--bg)}
+.tabs.sub .tab.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.panel{display:none}.panel.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px}
+.card{background:var(--card);border-radius:10px;padding:20px;border:1px solid var(--line)}
+.card h2{font-size:18px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--bg)}
+.info{background:#fff7e0;border-left:4px solid var(--gold);padding:10px 14px;border-radius:0 6px 6px 0;font-size:14px;margin-bottom:14px}
+.cat{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;overflow:hidden;background:#fff}
+.cat-t{background:var(--bg);padding:9px 14px;font-weight:700;font-size:14px;display:flex;justify-content:space-between}
+.cat-t span{color:var(--muted);font-weight:500}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.item{padding:7px 14px;border-top:1px solid var(--line);font-size:14px}
+.item label{display:flex;gap:10px;align-items:center;cursor:pointer}.item input{width:auto}
+.item input:checked+span{color:var(--muted);text-decoration:line-through}
+
+/* Targets */
+.t-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg);border-left:4px solid var(--teal);border-radius:0 6px 6px 0;margin-bottom:8px}
+.t-row input{width:auto}.t-row span{flex:1}
+.t-row input:checked+span{color:var(--muted);text-decoration:line-through}
+.x{background:none;border:0;color:var(--bad);font-size:17px}
+.sum{font-size:14px;font-weight:700;margin-bottom:10px;color:var(--teal-d)}
+
+/* Planner */
+.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:8px 18px}
+.slot{display:grid;grid-template-columns:118px 1fr auto;gap:8px;align-items:center;padding:4px 0}
+.slot b{font-size:13px;color:var(--muted)}
+.slot label{font-size:12px;display:flex;gap:4px;align-items:center;white-space:nowrap}.slot label input{width:auto}
+.slot.study input[type=text]{border-color:var(--teal);background:#EFEDFF}
+
+/* Tracker */
+#time-left{font-family:ui-monospace,Consolas,monospace;font-size:44px;font-weight:700;text-align:center;margin:6px 0 12px}
+.log-list{max-height:170px;overflow-y:auto;margin-top:12px}
+.log{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-left:4px solid var(--teal);background:var(--bg);border-radius:0 6px 6px 0;margin-bottom:6px;font-size:14px}
+.avg{margin-top:8px;font-size:13px;color:var(--muted)}
+.cal-head{display:flex;justify-content:space-between;margin-bottom:10px;font-weight:700;flex-wrap:wrap}
+.cal-head small{color:var(--muted);font-weight:500}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.cal div{padding:9px 0;border-radius:5px;font-size:12px;font-weight:600;background:#ECE9FB;user-select:none}
+.cal .h{background:none;color:var(--teal)}.cal .b{background:none}.cal .d{cursor:pointer}
+.cal .d.done{background:var(--ok);color:#fff}.cal .d.today{box-shadow:inset 0 0 0 2px var(--gold)}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:8px;font-weight:600;display:none;z-index:9}
+@media(max-width:480px){.slot{grid-template-columns:96px 1fr}.slot label{grid-column:2}}
+@media(prefers-reduced-motion:reduce){.bar>div{transition:none}}
+
+/* v2 additions */
+.right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.clock{text-align:right;line-height:1.25}
+.clock .t{font-family:ui-monospace,Consolas,monospace;font-size:26px;font-weight:700;color:var(--gold)}
+.clock .d{font-size:13px;color:#C9C3F0}
+.today{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px;background:#2E2866;border-radius:8px;padding:10px 14px}
+.today b{font-size:22px;color:var(--gold)}.today small{color:#C9C3F0}
+.today .bar{flex:1;min-width:140px;margin:0}.today .bar>div{background:var(--ok)}
+.card .bar.lt{background:var(--bg);margin:0 0 14px}.card .bar.lt>div{background:var(--ok)}
+.plan{display:block}
+.ph{margin:16px 0 6px;padding-bottom:4px;border-bottom:2px solid var(--bg);font-weight:700;font-size:14px;color:var(--teal-d)}
+.slot.now{background:#fff7e0;box-shadow:inset 4px 0 0 var(--gold);border-radius:6px;padding-left:10px}
+.slot.done input[type=text]{text-decoration:line-through;opacity:.7}
+.flags{display:flex;gap:10px}
+@media(max-width:480px){.slot{grid-template-columns:96px 1fr}.flags{grid-column:2}}
+
+select{font:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);cursor:pointer}
+.ptop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mini{height:5px;background:var(--bg);border-radius:4px;margin-top:6px;overflow:hidden}.mini>div{height:100%;background:var(--ok)}
+.sbar{height:6px;background:var(--bg)}.sbar>div{height:100%;width:0;background:var(--gold);transition:width .3s}
+.cat-t span{color:var(--teal-d);font-weight:700}
+.kural{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--gold);border-radius:10px;padding:18px 22px;margin-bottom:16px}
+.kural .kh{font-weight:700;color:var(--teal-d);font-size:14px;margin-bottom:8px}
+.kural .kt{font-size:20px;font-weight:700;line-height:1.7}
+.kural .km{font-size:14px;color:var(--muted);margin-top:8px}
+.top .kural{background:#2E2866;border:0;border-left:6px solid var(--gold);color:#fff;flex:1;min-width:260px;margin-bottom:0;padding:12px 18px}
+.top .kural .kh{color:var(--gold);margin-bottom:4px}
+.top .kural .kt{font-size:18px;line-height:1.6}
+.top .kural .km{color:#C9C3F0}
+
+/* Rank card */
+.rk-hero{background:var(--ink);color:#fff;border-radius:12px;padding:22px 24px;display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:16px;border-top:5px solid var(--gold)}
+.rk-hero .big{font-size:48px;font-weight:800;color:var(--gold);line-height:1.1}
+.rk-hero .gr{width:68px;height:68px;border-radius:50%;background:var(--gold);color:var(--ink);font-size:28px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rk-hero small{color:#C9C3F0;display:block;font-size:13px}
+.rk-hero b{font-size:20px;display:block}
+.rk-add{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:10px}
+.rk-add .btn{width:auto}
+.rk-row{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:10px;background:#fff}
+.rk-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}.rk-h b{flex:1}
+.rk-h .g{background:var(--bg);color:var(--teal-d);border-radius:4px;padding:2px 10px;font-weight:800;font-size:13px}
+.rk-in{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rk-in label{font-size:12px;font-weight:600;color:var(--muted)}.rk-in input{margin-top:3px;padding:7px}
+.rk-bar{position:relative;height:12px;background:var(--bg);border-radius:6px;margin:12px 0 8px}
+.rk-bar .f{height:100%;border-radius:6px;transition:width .3s}
+.rk-bar .m{position:absolute;top:-3px;bottom:-3px;width:3px;background:var(--ink);border-radius:2px}
+.rk-msg{font-size:13px;font-weight:600}
+.rk-pri li{margin:6px 0 6px 22px;font-size:14px}
+@media(max-width:640px){.rk-add{grid-template-columns:1fr 1fr}.rk-add .btn{grid-column:1/-1}}
+#rem-alert{display:none;position:fixed;top:14px;left:50%;transform:translateX(-50%);width:min(440px,92vw);background:var(--gold);color:var(--ink);padding:14px 18px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:20;font-weight:600}
+#rem-alert div{margin:6px 0}#rem-alert button{margin-top:6px;background:var(--ink);color:#fff;border:0;border-radius:6px;padding:7px 16px;font-weight:700}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.cal-nav b{font-size:16px;text-align:center;flex:1}
+.cal-nav button,.cal-nav2 button{background:var(--teal);color:#fff;border:0;border-radius:6px;padding:7px 14px;font-weight:700}
+.cal-nav button:hover,.cal-nav2 button:hover{background:var(--teal-d)}
+.cal-nav2{display:flex;gap:8px;margin-bottom:10px}.cal-nav2 input{padding:6px 8px}.cal-nav2 button{background:var(--gold);color:var(--ink);white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--bg);border-radius:8px;padding:10px 12px;text-align:center;border-top:4px solid var(--teal)}
+.stat b{display:block;font-size:26px}.stat small{color:var(--muted);font-weight:600}
+.stat.ok{border-top-color:var(--ok)}.stat.ok b{color:var(--ok)}.stat.bad{border-top-color:var(--bad)}.stat.bad b{color:var(--bad)}
+.wk-add{display:grid;grid-template-columns:2fr 1fr 1.4fr auto;gap:8px;margin-bottom:14px}.wk-add .btn{width:auto}
+.wk{border:1px solid var(--line);border-radius:8px;margin-bottom:12px;overflow:hidden;background:#fff}
+.wk.cur{border-color:var(--gold);box-shadow:0 0 0 2px #f6e3ae}
+.wk-t{background:var(--bg);padding:9px 14px;font-weight:700;font-size:14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.wk-t span{font-weight:600;color:var(--teal-d)}.wk-t span.late{color:var(--bad)}
+.wk-b{padding:10px}.wk-b .t-row:last-child{margin-bottom:0}
+.wk-e{color:var(--muted);font-size:13px;padding:2px 4px}
+@media(max-width:640px){.wk-add{grid-template-columns:1fr 1fr}.wk-add input,.wk-add .btn{grid-column:1/-1}}
+.cal .d.sp{background:var(--ok);color:#fff}.cal .d.sa{background:var(--bad);color:#fff}.cal .d.sl{background:var(--gold);color:var(--ink)}
+.cal .d.td{box-shadow:inset 0 0 0 2px var(--ink)}.cal .d.sel{outline:2px solid var(--teal);outline-offset:1px}
+.att-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.att-head small{color:var(--muted);font-weight:600}.att-date{font-size:22px;font-weight:800;line-height:1.3}
+.bdg{display:inline-block;padding:4px 12px;border-radius:14px;font-weight:700;font-size:13px;white-space:nowrap}
+.bdg.sp{background:#e3f5ec;color:var(--ok)}.bdg.sa{background:#fdecea;color:var(--bad)}.bdg.sl{background:#fff3d1;color:#8a6200}.bdg.sn{background:var(--bg);color:var(--muted)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.seg button{padding:16px 6px;border-radius:10px;border:2px solid var(--line);background:#fff;font-weight:800;font-size:16px;color:var(--ink)}
+.seg button:hover{border-color:var(--teal)}
+.seg button.on.sp{background:var(--ok);border-color:var(--ok);color:#fff}.seg button.on.sa{background:var(--bad);border-color:var(--bad);color:#fff}.seg button.on.sl{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.att-times{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0 14px}
+.att-hrs{font-size:20px;font-weight:800;color:var(--teal-d);padding:8px 0}
+.att-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px}
+.att-leg{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted);font-weight:600}
+.att-leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.att-leg i.sp{background:var(--ok)}.att-leg i.sa{background:var(--bad)}.att-leg i.sl{background:var(--gold)}.att-leg i.sn{background:#ECE9FB}
+.att-tb{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+.att-tb th{text-align:left;background:var(--bg);padding:9px 10px;font-size:13px;color:var(--teal-d)}
+.att-tb td{padding:9px 10px;border-bottom:1px solid var(--line)}
+.att-tb tbody tr{cursor:pointer}.att-tb tbody tr:hover{background:#F3F1FF}
+.att-tb tr.sun td:nth-child(2){color:var(--bad);font-weight:700}
+.att-tb tr.selrow{background:#fff7e0}
+
+/* ===== Theme: indigo + marigold | Anek Tamil + Noto Serif Tamil ===== */
+:root{--sh:0 1px 2px rgba(31,27,58,.05),0 10px 28px -12px rgba(86,70,224,.22);--r-lg:28px;--r-md:20px;--r-sm:12px}
+body{padding:20px;line-height:1.55;-webkit-font-smoothing:antialiased}
+::selection{background:#FFE29A;color:var(--ink)}
+input,textarea,select{border-radius:var(--r-sm)}
+input,textarea{padding:11px 13px}
+input:focus,textarea:focus,select:focus{outline:0;border-color:var(--teal);box-shadow:0 0 0 4px rgba(86,70,224,.16)}
+button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.btn{border-radius:var(--r-sm);padding:12px 16px;box-shadow:0 8px 18px -8px rgba(86,70,224,.6);transition:transform .12s,background .15s}
+.btn:active{transform:translateY(1px)}
+.btn.gold{box-shadow:0 8px 18px -8px rgba(255,178,36,.8)}
+.btn.ok,.btn.bad{box-shadow:none}
+
+/* login + home hero */
+.hero{border-radius:var(--r-lg);padding:68px 28px}
+.hero h1{letter-spacing:-.5px}
+#auth{border-top:0;border-radius:var(--r-lg);padding:36px 32px;box-shadow:var(--sh)}
+#auth h1{letter-spacing:-.3px}
+.pw button{border-radius:8px}
+.cap canvas,.cap button{border-radius:var(--r-sm)}
+
+/* header: the Kural is the memorable element */
+header{border-radius:var(--r-lg);padding:28px 32px;margin-bottom:16px;box-shadow:0 18px 40px -20px rgba(31,27,58,.6);background:rgba(31,27,58,.86);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.top{align-items:center;gap:22px}
+.top .kural{background:transparent;border:0;border-left:3px solid var(--gold);border-radius:0;padding:2px 0 2px 20px;flex:1;min-width:260px}
+.top .kural .kh{font-size:13px;font-weight:600;color:var(--gold);margin-bottom:6px}
+.top .kural .kt{font-family:'Noto Serif Tamil','Anek Tamil',serif;font-size:clamp(18px,2.4vw,24px);font-weight:600;line-height:1.8;color:#fff}
+.top .kural .km{font-size:14px;color:#C9C3F0;margin-top:6px}
+.top button{border-radius:999px;padding:8px 18px}
+.clock .t{font-family:inherit;font-variant-numeric:tabular-nums;font-size:28px}
+
+/* tabs */
+.tab{border-radius:999px;padding:9px 20px;transition:background .15s,color .15s,box-shadow .15s}
+.tab:hover{border-color:var(--teal);color:var(--teal-d)}
+.tab.on,.tab.on:hover{background:var(--teal);color:#fff;border-color:var(--teal);box-shadow:0 8px 18px -8px rgba(86,70,224,.7)}
+.tabs.sub{padding-left:0;border-left:0;margin-top:-4px}
+.tabs.sub .tab{padding:6px 16px;background:transparent}
+.tabs.sub .tab.on,.tabs.sub .tab.on:hover{background:var(--gold);color:var(--ink);border-color:var(--gold);box-shadow:none}
+
+/* surfaces */
+.card{border-radius:var(--r-md);padding:22px;box-shadow:var(--sh)}
+.card h2{border-bottom:0;padding-bottom:0;margin-bottom:14px;font-size:19px;font-weight:700}
+.cat,.wk,.rk-row{border-radius:16px}
+.cat-t,.wk-t{background:#F3F1FF}
+.t-row,.log{border-left:0;border-radius:12px;box-shadow:inset 4px 0 0 var(--teal)}
+.info{border-left:0;border-radius:12px;box-shadow:inset 4px 0 0 var(--gold)}
+.stat{border-radius:16px}
+.rk-hero{border-top:0;border-radius:var(--r-lg)}
+.bar,.mini,.rk-bar,.rk-bar .f{border-radius:999px}
+.seg button{border-radius:16px}
+.slot.now{border-radius:12px}
+.cal div{border-radius:10px}
+#toast{border-radius:999px;padding:11px 22px}
+#rem-alert{border-radius:var(--r-md)}
+@media(max-width:480px){body{padding:12px}header{padding:20px}.tab{padding:8px 14px}}
+
+/* ===== Landing + login: pulli (dot) backdrop, double-line frame, star emblem ===== */
+.emblem{display:flex;justify-content:center;margin-bottom:16px;color:#C9C3F0}
+.emblem svg{width:112px;height:auto}
+#home.on{display:flex;align-items:center;min-height:calc(100vh - 40px)}
+#home .hero{position:relative;width:100%;margin-bottom:0;padding:92px 28px;background-image:radial-gradient(rgba(201,195,240,.2) 1.6px,transparent 1.8px);background-size:26px 26px;box-shadow:0 30px 60px -30px rgba(31,27,58,.7)}
+#home .hero>*{position:relative;z-index:1}
+#home .hero::before{content:"";position:absolute;inset:14px;border:2px solid var(--gold);border-radius:calc(var(--r-lg) - 10px);pointer-events:none}
+#home .hero::after{content:"";position:absolute;inset:23px;border:1px solid rgba(255,178,36,.45);border-radius:calc(var(--r-lg) - 18px);pointer-events:none}
+#home .hero h1{margin-bottom:30px}
+#auth{position:relative;border:1px solid var(--line);padding:44px 36px 36px}
+#auth::before{content:"";position:absolute;inset:10px;border:2px solid var(--gold);border-radius:calc(var(--r-lg) - 8px);pointer-events:none}
+#auth .emblem{color:var(--teal)}
+#auth .emblem svg{width:88px;height:auto}
+@media(max-width:480px){#home .hero{padding:72px 20px}#auth{padding:40px 26px 30px}}
+
+/* ===== Rotating nature background ===== */
+#bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--bg)}
+.bg-l{position:absolute;inset:-12px;background-size:cover;background-position:center;opacity:0;transition:opacity 1.4s ease;filter:blur(4px)}
+.bg-l.on{opacity:1}
+#bg::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(31,27,58,.06),rgba(31,27,58,.2));transition:background .5s}
+body[data-scr="home"] #bg::after,body[data-scr="auth"] #bg::after{background:linear-gradient(rgba(31,27,58,0),rgba(31,27,58,.22))}
+#home .hero{background-color:rgba(31,27,58,.34);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+#auth{background:rgba(255,255,255,.94)}
+.tabs.sub .tab{background:#fff}
+.tabs.sub .tab.on{background:var(--gold)}
+@media(prefers-reduced-motion:reduce){.bg-l{transition:none}}
+
+/* ===== Dark (black) surfaces inside the app ===== */
+:where(body:not([data-theme="light"])) #app{--card:#0F0E17;--bg:#1B1830;--line:#2E2A4A;--muted:#A9A5D1;--teal-d:#B5ADFF;color:#ECEAFF;color-scheme:dark}
+:where(body:not([data-theme="light"])) #app input,:where(body:not([data-theme="light"])) #app textarea,:where(body:not([data-theme="light"])) #app select{background:#1B1830;color:#ECEAFF;border-color:var(--line)}
+:where(body:not([data-theme="light"])) #app ::placeholder{color:#8C88B5;opacity:1}
+:where(body:not([data-theme="light"])) #app .tab:not(.on){color:#ECEAFF}
+:where(body:not([data-theme="light"])) #app .tabs.sub .tab:not(.on){background:var(--card)}
+:where(body:not([data-theme="light"])) #app .cat,:where(body:not([data-theme="light"])) #app .wk,:where(body:not([data-theme="light"])) #app .rk-row{background:var(--card)}
+:where(body:not([data-theme="light"])) #app .cat-t,:where(body:not([data-theme="light"])) #app .wk-t,:where(body:not([data-theme="light"])) #app .att-tb th{background:var(--bg)}
+:where(body:not([data-theme="light"])) #app .seg button:not(.on){background:var(--card);color:#ECEAFF}
+:where(body:not([data-theme="light"])) #app .info,:where(body:not([data-theme="light"])) #app .slot.now,:where(body:not([data-theme="light"])) #app .att-tb tr.selrow{background:rgba(255,178,36,.14)}
+:where(body:not([data-theme="light"])) #app .att-tb tbody tr:hover{background:#1B1830}
+:where(body:not([data-theme="light"])) #app .slot.study input[type=text]{background:#26225A;border-color:var(--teal)}
+:where(body:not([data-theme="light"])) #app .cal div{background:var(--bg)}
+:where(body:not([data-theme="light"])) #app .cal .h{color:#B5ADFF}
+:where(body:not([data-theme="light"])) #app .cal .d.done,:where(body:not([data-theme="light"])) #app .cal .d.sp,:where(body:not([data-theme="light"])) #app .cal .d.sa{color:#fff}
+:where(body:not([data-theme="light"])) #app .bdg.sp{background:rgba(15,143,95,.22);color:#5FE3A8}
+:where(body:not([data-theme="light"])) #app .bdg.sa{background:rgba(211,63,82,.22);color:#FF8A98}
+:where(body:not([data-theme="light"])) #app .bdg.sl{background:rgba(255,178,36,.2);color:#FFC95C}
+:where(body:not([data-theme="light"])) #app .rk-bar .m{background:#fff}
+:where(body:not([data-theme="light"])) #app .btn:hover,:where(body:not([data-theme="light"])) #app .cal-nav button:hover,:where(body:not([data-theme="light"])) #app .cal-nav2 button:hover{background:#4335B8}
+:where(body:not([data-theme="light"])) #app .btn.gold:hover,:where(body:not([data-theme="light"])) #app .cal-nav2 button:hover{background:#FFC85C;color:var(--ink)}
+:where(body:not([data-theme="light"])) #app .card,:where(body:not([data-theme="light"])) #app .cat,:where(body:not([data-theme="light"])) #app .wk,:where(body:not([data-theme="light"])) #app .rk-row{border-color:var(--line)}
+:where(body:not([data-theme="light"])) #app .card{box-shadow:0 10px 30px -14px rgba(0,0,0,.7)}
+
+/* ===== Main navigation bar ===== */
+.tabs.nav{position:sticky;top:10px;z-index:30;display:flex;justify-content:center;align-items:center;gap:4px;width:max-content;max-width:100%;margin:0 auto 16px;padding:5px;border:1px solid transparent;border-radius:999px;background:linear-gradient(rgba(15,14,23,.9),rgba(15,14,23,.9)) padding-box,linear-gradient(120deg,rgba(255,178,36,.75),rgba(86,70,224,.55) 55%,rgba(255,178,36,.3)) border-box;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 14px 30px -14px rgba(0,0,0,.75)}
+.tabs.nav .tab{position:relative;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;padding:7px 16px 7px 8px;border:0;border-radius:999px;background:transparent;box-shadow:none;font-size:14px;font-weight:600;line-height:1.2;white-space:nowrap}
+.tabs.nav .tab .ic{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.08);font-size:15px;line-height:1;transition:background .15s}
+.tabs.nav .tab.on .ic{background:rgba(255,255,255,.22)}
+#app .tabs.nav .tab:not(.on){color:#C9C3F0}
+.tabs.nav .tab:hover:not(.on){background:rgba(255,255,255,.08);color:#fff;border:0}
+.tabs.nav .tab.on,.tabs.nav .tab.on:hover{background:linear-gradient(135deg,#5646E0,#7A5BFF);color:#fff;box-shadow:0 6px 14px -6px rgba(86,70,224,.9)}
+.tabs.nav .tab.on::after{content:"";position:absolute;left:50%;bottom:3px;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.tabs.sub{justify-content:center}
+@media(max-width:640px){
+  .tabs.nav{position:fixed;top:auto;bottom:10px;left:12px;right:12px;width:auto;max-width:none;margin:0;padding:5px;display:grid;grid-template-columns:repeat(4,1fr);gap:2px;border-radius:26px}
+  .tabs.nav .tab{flex-direction:column;gap:1px;padding:9px 2px 6px;font-size:11.5px;border-radius:21px}
+  .tabs.nav .tab .ic{width:auto;height:auto;border-radius:0;background:none;font-size:20px}
+  .tabs.nav .tab.on .ic{background:none}
+  .tabs.nav .tab.on::after{bottom:auto;top:4px}
+  #app{padding-bottom:12px}
+  #toast{bottom:110px}
+}
+
+/* ===== SAGO watermark ===== */
+.wm{text-align:center;margin:28px auto 8px;font-size:15px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.55);text-shadow:0 1px 6px rgba(0,0,0,.55);user-select:none;pointer-events:none}
+.wm i{font-style:normal;color:#FF3B5C;font-size:.85em;margin-left:6px;letter-spacing:0;vertical-align:1px;text-shadow:0 1px 4px rgba(0,0,0,.35)}
+@media(max-width:640px){.wm{margin-bottom:20px}}
+
+/* ===== Theme toggle (Dark / Light) ===== */
+.theme-btn{cursor:pointer;line-height:1}
+
+#theme-fab{display:flex;align-items:center;justify-content:center;width:30px;height:30px;margin:0 auto 22px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(15,14,23,.6);color:#fff;font-size:14px;line-height:1;cursor:pointer;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:transform .15s}
+#theme-fab:hover{transform:scale(1.12)}
+body[data-theme="light"] #theme-fab{background:rgba(255,255,255,.85);color:var(--ink);border-color:rgba(31,27,58,.18)}
+@media(max-width:640px){body[data-scr="app"] .foot{padding-bottom:84px}}
+/* dark login card (default) */
+body:not([data-theme="light"]) #auth{background:rgba(15,14,23,.92);color:#ECEAFF;border-color:#2E2A4A;color-scheme:dark}
+body:not([data-theme="light"]) #auth input{background:#1B1830;color:#ECEAFF;border-color:#2E2A4A}
+body:not([data-theme="light"]) #auth ::placeholder{color:#8C88B5;opacity:1}
+body:not([data-theme="light"]) #auth .pw button,body:not([data-theme="light"]) #auth .cap button{background:#26225A;color:#B5ADFF}
+body:not([data-theme="light"]) #auth .emblem{color:#8F83FF}
+body:not([data-theme="light"]) #auth .link{color:#B5ADFF}
+
+/* light mode */
+body[data-theme="light"] #bg::after{background:linear-gradient(rgba(246,244,255,.5),rgba(246,244,255,.72))}
+body[data-theme="light"][data-scr="home"] #bg::after,body[data-theme="light"][data-scr="auth"] #bg::after{background:linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,.3))}
+body[data-theme="light"] #home .hero{background-color:rgba(255,255,255,.58);color:var(--ink);background-image:radial-gradient(rgba(86,70,224,.16) 1.6px,transparent 1.8px)}
+body[data-theme="light"] #home .hero p{color:var(--muted)}
+body[data-theme="light"] #home .emblem{color:var(--teal)}
+body[data-theme="light"] .tabs.nav{background:linear-gradient(rgba(255,255,255,.93),rgba(255,255,255,.93)) padding-box,linear-gradient(120deg,rgba(255,178,36,.85),rgba(86,70,224,.5) 55%,rgba(255,178,36,.35)) border-box;box-shadow:0 14px 30px -14px rgba(31,27,58,.4)}
+body[data-theme="light"] .tabs.nav .tab:not(.on) .ic{background:rgba(31,27,58,.07)}
+body[data-theme="light"] #app .tabs.nav .tab:not(.on){color:#4A4670}
+body[data-theme="light"] .tabs.nav .tab:hover:not(.on){background:rgba(86,70,224,.1);color:var(--teal-d)}
+body[data-theme="light"] .wm{color:rgba(31,27,58,.6);text-shadow:0 1px 6px rgba(255,255,255,.7)}
+
+/* ===== Nav arrow + flyout menus ===== */
+#study-sub{display:none!important}
+.nv{position:relative;display:flex}
+.nv>.tab{flex:1;min-width:0}
+.fly{display:none;position:absolute;left:50%;top:calc(100% + 12px);transform:translateX(-50%);min-width:220px;padding:8px;background:rgba(15,14,23,.97);border:1px solid rgba(255,255,255,.1);border-radius:20px;box-shadow:0 22px 44px -16px rgba(0,0,0,.8);z-index:40}
+.fly::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px}
+.nv:last-child .fly{left:auto;right:0;transform:none}
+.nv.open .fly{display:block}
+.fi{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:transparent;color:#ECEAFF;padding:11px 14px;border-radius:13px;font-size:15px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background .12s}
+.fi:hover{background:rgba(255,255,255,.1)}
+.fi.on{background:var(--teal);color:#fff}
+body[data-theme="light"] .fly{background:rgba(255,255,255,.98);border-color:rgba(31,27,58,.12);box-shadow:0 22px 44px -16px rgba(31,27,58,.4)}
+body[data-theme="light"] .fi{color:var(--ink)}
+body[data-theme="light"] .fi:hover{background:rgba(86,70,224,.1)}
+body[data-theme="light"] .fi.on{background:var(--teal);color:#fff}
+@media(max-width:640px){
+  .fly{top:auto;bottom:calc(100% + 12px);min-width:200px}
+  .fly::before{top:auto;bottom:-14px}
+}
+
+/* ===== Only the chosen page shows: sub-tab rows live in the arrow menus ===== */
+#exam-tabs,#tgt-tabs,#att-tabs,#gym-tabs,#fin-tabs{display:none!important}
+.fh{padding:10px 14px 4px;font-size:12px;font-weight:700;letter-spacing:.4px;color:#A9A5D1}
+.fh:first-child{padding-top:4px}
+body[data-theme="light"] .fh{color:#6E6A93}
+.fly .fi{padding-left:22px}
+.nv[data-g="health"] .fly .fi,.nv[data-g="fin"] .fly .fi{padding-left:14px}
+@media(max-width:640px){.fly{max-height:70vh;overflow-y:auto}}
+
+/* ===== Cards: two colours circling the border ===== */
+@property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes ringspin{to{--ang:360deg}}
+#app{--ring2:#8F7BFF}
+body[data-theme="light"] #app{--ring2:#5646E0}
+#app .card{position:relative}
+#app .card::before,#app .card::after,#app .tabs.nav::before,#app .tabs.nav::after,#p-home .hero::before,#p-home .hero::after,#app header::before,#app header::after,#p-syl .info::before,#p-syl .info::after,#syl .cat::before,#syl .cat::after{content:"";position:absolute;inset:-1px;padding:3px;border-radius:inherit;pointer-events:none;
+  background:conic-gradient(from var(--ang),transparent 0deg,var(--gold) 45deg,var(--gold) 100deg,transparent 160deg,transparent 180deg,var(--ring2) 225deg,var(--ring2) 280deg,transparent 340deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  animation:ringspin 6s linear infinite}
+#app .card::after,#app .tabs.nav::after,#p-home .hero::after,#app header::after,#p-syl .info::after,#syl .cat::after{filter:blur(7px);opacity:.85}
+@media(prefers-reduced-motion:reduce){#app .card::before,#app .card::after,#app .tabs.nav::before,#app .tabs.nav::after,#p-home .hero::before,#p-home .hero::after,#app header::before,#app header::after,#p-syl .info::before,#p-syl .info::after,#syl .cat::before,#syl .cat::after{animation:none}}
+/* Syllabus boxes */
+#p-syl .info,#syl .cat{position:relative}
+#syl .cat::before,#syl .cat::after{inset:0}
+#app header{position:relative;--ring2:#8F7BFF}
+
+/* Home greeting box: smaller name + circling colours */
+#p-home .hero{position:relative;--ring2:#8F7BFF;padding:36px 24px}
+#p-home .hero h1{font-size:clamp(24px,4.6vw,38px);letter-spacing:0;margin-bottom:10px}
+#p-home .hero p{margin:0 auto;font-size:15px}
+
+/* exam tabs with logos */
+#exam-tabs .tab,#rk-tabs .tab{display:inline-flex;align-items:center;gap:9px;padding-left:10px}
+.xlogo{display:inline-flex;width:26px;height:26px;flex-shrink:0}
+.xlogo svg,.xlogo img{width:100%;height:100%;border-radius:50%;object-fit:contain}
+.xlogo img{background:#fff}
+</style>
+</head>
+<body>
+<script>try{if(localStorage.getItem("theme")==="light")document.body.dataset.theme="light"}catch(e){}</script>
+<div id="bg" aria-hidden="true"><div class="bg-l on"></div><div class="bg-l"></div></div>
+<div class="wrap">
+
+<!-- HOME -->
+<div id="home" class="screen on">
+  <div class="hero">
+    <div class="emblem" aria-hidden="true"><svg viewBox="0 0 120 68" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#FFB224" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="22" width="100" height="32" rx="7" opacity=".4" transform="rotate(-5 60 38)"/><rect x="9" y="19" width="102" height="32" rx="7" opacity=".7" transform="rotate(3 60 35)"/><rect x="8" y="15" width="104" height="34" rx="7" fill="#1F1B3A"/><path d="M19 49 C19 56 13 60 11 66" stroke-width="1.6"/></g><circle cx="19" cy="32" r="3" fill="none" stroke="#FFB224" stroke-width="2"/><circle cx="11" cy="66" r="1.8" fill="#FFB224"/><g fill="none" stroke="#C9C3F0" stroke-width="2.2" stroke-linecap="round"><path d="M32 24h14M50 24h10M64 24h16M84 24h8M96 24h6"/><path d="M32 32h10M46 32h16M66 32h12M82 32h18"/><path d="M32 40h16M52 40h8M64 40h14M82 40h10M96 40h6"/></g></svg></div>
+    <h1>Tracker</h1>
+    <button class="btn gold auto" id="go-login">Login</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<form id="auth" class="screen" autocomplete="off">
+  <div class="emblem" aria-hidden="true"><svg viewBox="0 0 120 68" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#FFB224" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="22" width="100" height="32" rx="7" opacity=".4" transform="rotate(-5 60 38)"/><rect x="9" y="19" width="102" height="32" rx="7" opacity=".7" transform="rotate(3 60 35)"/><rect x="8" y="15" width="104" height="34" rx="7" fill="#1F1B3A"/><path d="M19 49 C19 56 13 60 11 66" stroke-width="1.6"/></g><circle cx="19" cy="32" r="3" fill="none" stroke="#FFB224" stroke-width="2"/><circle cx="11" cy="66" r="1.8" fill="#FFB224"/><g fill="none" stroke="#C9C3F0" stroke-width="2.2" stroke-linecap="round"><path d="M32 24h14M50 24h10M64 24h16M84 24h8M96 24h6"/><path d="M32 32h10M46 32h16M66 32h12M82 32h18"/><path d="M32 40h16M52 40h8M64 40h14M82 40h10M96 40h6"/></g></svg></div>
+  <h1>Tracker</h1>
+  <div id="err">Username அல்லது Password தவறு. மறுபடி try பண்ணுங்க.</div>
+  <div class="field"><label for="lu">Username</label><input type="text" id="lu" autocapitalize="none" required></div>
+  <div class="field"><label for="lp">Password</label>
+    <div class="pw"><input type="password" id="lp" required><button type="button" id="eye">SHOW</button></div></div>
+  <div class="field"><label for="lc">Captcha</label>
+    <div class="cap"><canvas id="cap" width="190" height="48" role="img" aria-label="Captcha image"></canvas><button type="button" id="cap-r" title="புதிய captcha" aria-label="புதிய captcha">&#8635;</button></div>
+    <input type="text" id="lc" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="5" placeholder="மேலே தெரியும் எழுத்துகளை டைப் பண்ணுங்க" required></div>
+  <button type="submit" class="btn">Login</button>
+</form>
+
+<!-- APP -->
+<div id="app" class="screen">
+  <header>
+    <div class="top">
+      <div class="kural">
+        <div class="kh">📜 இன்றைய திருக்குறள் <span id="k-no"></span></div>
+        <div class="kt" id="k-text"></div>
+        <div class="km" id="k-mean"></div>
+      </div>
+      <div class="right">
+        <div class="clock"><div class="t" id="clk-time">--:--:--</div><div class="d" id="clk-date"></div><div class="d" id="clk-day"></div></div>
+        <div class="row"><button id="save">💾 Save</button><button id="logout">Logout</button></div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs nav" aria-label="Main navigation">
+    <button class="tab on" data-p="p-home" type="button"><span class="ic" aria-hidden="true">🏠</span><span>Home</span></button>
+    <div class="nv" data-g="study">
+      <button class="tab" id="tab-study" type="button" aria-controls="study-sub"><span class="ic" aria-hidden="true">📖</span><span>Study</span></button>
+      <div class="fly" role="menu"><div class="fh">📚 Syllabus</div><div id="fly-exams"></div><div class="fh">🎯 Target</div><button class="fi" type="button" role="menuitem" data-v="tgt:m">📌 Monthly Target</button><button class="fi" type="button" role="menuitem" data-v="tgt:w">🗓️ Weekly Target</button><button class="fi" type="button" role="menuitem" data-v="tgt:r">🏆 Rank Card</button><div class="fh">🙋 Attendance</div><button class="fi" type="button" role="menuitem" data-v="att:a">🙋 Attendance</button><button class="fi" type="button" role="menuitem" data-v="att:p">⏰ Daily Planner</button></div>
+    </div>
+    <div class="nv" data-g="health">
+      <button class="tab" data-p="p-gym" type="button"><span class="ic" aria-hidden="true">💪</span><span>Health</span></button>
+      <div class="fly" role="menu"><button class="fi" type="button" role="menuitem" data-v="g">💪 Gym &amp; Health</button><button class="fi" type="button" role="menuitem" data-v="b">🪣 Bucket List &amp; Goals</button><button class="fi" type="button" role="menuitem" data-v="h">🌟 Habits</button><button class="fi" type="button" role="menuitem" data-v="s">📱 Social Media</button></div>
+    </div>
+    <div class="nv" data-g="fin">
+      <button class="tab" data-p="p-fin" type="button"><span class="ic" aria-hidden="true">💰</span><span>Finance</span></button>
+      <div class="fly" role="menu"><button class="fi" type="button" role="menuitem" data-v="exp">💸 Expenses</button><button class="fi" type="button" role="menuitem" data-v="sav">🏦 Savings</button></div>
+    </div>
+  </nav>
+  <div class="tabs sub" id="study-sub" style="display:none">
+    <button class="tab" type="button" data-sp="p-syl">📚 Syllabus</button>
+    <button class="tab" type="button" data-sp="p-tgt">🎯 Target</button>
+    <button class="tab" type="button" data-sp="p-att">🙋 Attendance</button>
+  </div>
+
+  <!-- Home -->
+  <div class="panel on" id="p-home">
+    <div class="hero"><h1 id="home-h"></h1><p id="home-p"></p></div>
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><h2>🔔 Reminders</h2>
+        <div class="info">Date & நேரம் set பண்ணுங்க. அந்த நேரத்துல notification வரும் (இந்த page open-ஆ இருக்கணும்).</div>
+        <div class="field"><input type="text" id="rem-n" placeholder="என்ன நினைவுபடுத்தணும்? (உதா: Mock test எழுதணும்)"></div>
+        <div class="row field"><input type="date" id="rem-d"><input type="time" id="rem-t" value="08:00"></div>
+        <button class="btn" id="rem-add">Reminder Add</button>
+        <div class="row" style="margin-top:10px;align-items:center;flex-wrap:wrap"><button class="btn gold auto" id="rem-allow">🔔 Notification Allow</button><small id="rem-perm" style="color:var(--muted);flex:1"></small></div>
+        <div class="log-list" id="rem-list" style="max-height:260px"></div></div>
+      <div class="card"><h2>📓 Notes</h2><textarea id="notes" rows="8" placeholder="Quick notes, formulas, dates..."></textarea></div>
+    </div>
+  </div>
+
+  <!-- Syllabus -->
+  <div class="panel" id="p-syl">
+    <div class="tabs" id="exam-tabs"></div>
+    <div class="info" id="exam-info"></div>
+    <div id="syl"></div>
+  </div>
+
+  <!-- Monthly target -->
+  <div class="panel" id="p-tgt">
+    <div class="card">
+      <h2 id="tgt-title">🎯 Monthly Target Plan</h2>
+      <div class="sum" id="tgt-all"></div>
+      <div class="bar lt" style="margin-bottom:0"><div id="tgt-bar"></div></div>
+    </div>
+    <div class="tabs" id="tgt-tabs" style="margin:16px 0">
+      <button type="button" class="tab on" data-t="m">📌 Monthly Target</button>
+      <button type="button" class="tab" data-t="w">🗓️ Weekly Target</button>
+      <button type="button" class="tab" data-t="r">🏆 Rank Card</button>
+    </div>
+    <div id="tgt-m">
+    <div class="card">
+      <h2>📌 Monthly இலக்குகள்</h2>
+      <div class="stats">
+        <div class="stat ok"><b id="s-mf">0</b><small>Monthly முடிஞ்சது</small></div>
+        <div class="stat bad"><b id="s-mp">0</b><small>Monthly pending</small></div>
+      </div>
+      <div class="row field"><input type="text" id="tgt-in" placeholder="உதா: இந்த மாசம் Polity முழுசா முடிக்கணும்"><button class="btn auto" id="tgt-add">Add</button></div>
+      <div class="sum" id="tgt-sum"></div>
+      <div id="tgt-list"></div>
+    </div>
+    </div>
+    <div id="tgt-w" style="display:none">
+    <div class="card">
+      <h2>🗓️ Weekly இலக்குகள்</h2>
+      <div class="stats">
+        <div class="stat ok"><b id="s-wf">0</b><small>Weekly முடிஞ்சது</small></div>
+        <div class="stat bad"><b id="s-wp">0</b><small>Weekly pending</small></div>
+      </div>
+      <div class="sum" id="tgt-week"></div>
+      <div class="info">ஒவ்வொரு வாரத்துக்கும் இலக்கு set பண்ணுங்க. Monthly இலக்கோட link பண்ணா, அந்த monthly இலக்குல weekly progress-ம் தெரியும்.</div>
+      <div class="wk-add">
+        <input type="text" id="wk-in" placeholder="உதா: Polity – Unit 1 & 2 முடிக்கணும்">
+        <select id="wk-w" aria-label="வாரம்"></select>
+        <select id="wk-g" aria-label="Monthly இலக்கு link"></select>
+        <button class="btn" id="wk-add">Add</button>
+      </div>
+      <div id="wk-weeks"></div>
+    </div>
+    </div>
+    <div id="tgt-r" style="display:none">
+    <div class="tabs" id="rk-tabs"></div>
+    <div class="rk-hero">
+      <div class="gr" id="rk-grade">-</div>
+      <div><small id="rk-who"></small><div class="big" id="rk-pct">--</div><small>மொத்த சதவீதம்</small></div>
+      <div style="flex:1;min-width:220px"><b id="rk-tot">0 / 0</b><small id="rk-goal"></small></div>
+    </div>
+    <div class="card">
+      <h2>🏆 Subject வாரியா Marks</h2>
+      <div class="info">Subject பெயர், எடுத்த மதிப்பெண், மொத்தம், Target மூணும் போட்டு Add பண்ணுங்க. அப்புறம் ஒவ்வொரு subject-லயும் நேரடியா marks-ஐ மாத்தினா rank card தானா update ஆகும். Target காலியா விட்டா 75% எடுத்துக்கும்.</div>
+      <div class="rk-add">
+        <input type="text" id="rk-n" placeholder="Subject (உதா: General Tamil)">
+        <input type="number" id="rk-s" placeholder="எடுத்தது" min="0" step="any">
+        <input type="number" id="rk-t" placeholder="மொத்தம்" min="1" step="any">
+        <input type="number" id="rk-g" placeholder="Target" min="0" step="any">
+        <button class="btn" id="rk-add">Add</button>
+      </div>
+      <button class="btn gold auto" id="rk-load" style="margin-bottom:14px">📥 Syllabus subjects எல்லாம் சேர்</button>
+      <div id="rk-rows"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>📈 எதுல எவ்வளவு improve பண்ணணும்?</h2>
+      <div class="sum" id="rk-first"></div>
+      <ol class="rk-pri" id="rk-pri"></ol>
+    </div>
+    </div>
+  </div>
+
+  <!-- Attendance -->
+  <div class="panel" id="p-att">
+    <div class="tabs" id="att-tabs" style="margin-bottom:16px">
+      <button type="button" class="tab on" data-a="a">🙋 Attendance</button>
+      <button type="button" class="tab" data-a="p">⏰ Daily Planner</button>
+    </div>
+    <div id="att-sub-a">
+    <div class="card" id="att-card">
+      <div class="att-head">
+        <div><small>📅 தேர்ந்தெடுத்த நாள்</small><div class="att-date" id="att-d"></div></div>
+        <span class="bdg sn" id="att-bdg"></span>
+      </div>
+      <div id="att-lock" style="display:none;margin:8px 0;padding:8px 12px;border-radius:10px;background:rgba(255,180,0,.12);color:var(--muted);font-weight:600;font-size:13px"></div>
+      <div class="seg">
+        <button type="button" id="att-p">✅ Present</button>
+        <button type="button" id="att-a">❌ Absent</button>
+        <button type="button" id="att-l">🟡 Leave</button>
+      </div>
+      <div class="att-times">
+        <div class="field"><label for="att-in">In Time</label><div class="row"><input type="time" id="att-in"><button type="button" class="btn gold auto" id="att-in-now">Now</button></div></div>
+        <div class="field"><label for="att-out">Out Time</label><div class="row"><input type="time" id="att-out"><button type="button" class="btn gold auto" id="att-out-now">Now</button></div></div>
+        <div class="field"><label>மொத்த நேரம்</label><div class="att-hrs" id="att-hrs">—</div></div>
+      </div>
+      <div class="field"><label for="att-n">குறிப்பு</label><input type="text" id="att-n" placeholder="உதா: Coaching class, Mock test, உடம்பு சரியில்ல"></div>
+      <div class="row"><button type="button" class="btn auto" id="atoday">📍 இன்னைக்கு</button><button type="button" class="btn bad auto" id="att-clr">Mark நீக்கு</button></div>
+    </div>
+
+    <div class="att-grid" style="margin-top:16px">
+      <div class="card">
+        <h2>📆 Attendance Calendar</h2>
+        <div class="cal-nav"><button type="button" id="aprev" title="முந்தைய மாசம்">◀</button><b id="atitle"></b><button type="button" id="anext" title="அடுத்த மாசம்">▶</button></div>
+        <div class="cal-nav2"><input type="month" id="apick" aria-label="மாசம் தேர்வு"></div>
+        <div class="cal" id="att-cal"></div>
+        <div class="att-leg"><span><i class="sp"></i>Present</span><span><i class="sa"></i>Absent</span><span><i class="sl"></i>Leave</span><span><i class="sn"></i>Mark பண்ணல</span></div>
+      </div>
+      <div class="card">
+        <h2>📊 இந்த மாசம் Summary</h2>
+        <div class="stats">
+          <div class="stat ok"><b id="as-p">0</b><small>Present</small></div>
+          <div class="stat bad"><b id="as-a">0</b><small>Absent</small></div>
+          <div class="stat"><b id="as-l">0</b><small>Leave</small></div>
+          <div class="stat"><b id="as-pc">--</b><small>Attendance %</small></div>
+          <div class="stat"><b id="as-s">0</b><small>🔥 Streak (நாள்)</small></div>
+          <div class="stat"><b id="as-h">—</b><small>மொத்த நேரம்</small></div>
+        </div>
+        <div class="sum" id="as-txt"></div>
+        <div class="bar lt"><div id="as-bar"></div></div>
+        <div class="avg">Attendance % = Present ÷ (Present + Absent). Leave நாட்கள் கணக்குல சேராது, Streak-ஐயும் உடைக்காது.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>📋 Attendance Register</h2>
+      <div class="info">ஒரு வரியை அழுத்தினா அந்த நாளை மேல edit பண்ணலாம்.</div>
+      <div style="overflow-x:auto"><table class="att-tb"><thead><tr><th>தேதி</th><th>நாள்</th><th>Status</th><th>In</th><th>Out</th><th>நேரம்</th><th>குறிப்பு</th></tr></thead><tbody id="att-rows"></tbody></table></div>
+    </div>
+    </div>
+    <div id="att-sub-p" style="display:none">
+    <div class="card">
+      <h2>⏰ காலை 4 AM – இரவு 10 PM அட்டவணை</h2>
+      <div class="row field" style="align-items:center;flex-wrap:wrap">
+        <div class="sum" id="plan-sum" style="margin:0;flex:1"></div>
+        <button class="btn auto gold" id="plan-reset">Suggested 12-hour plan</button>
+      </div>
+      <div class="plan" id="plan"></div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Gym -->
+  <div class="panel" id="p-gym">
+    <div class="tabs" id="gym-tabs" style="margin-bottom:16px">
+      <button type="button" class="tab on" data-g="g">💪 Gym & Health</button>
+      <button type="button" class="tab" data-g="b">🪣 Bucket List & Goals</button>
+      <button type="button" class="tab" data-g="h">🌟 Habits</button>
+      <button type="button" class="tab" data-g="s">📱 Social Media</button>
+    </div>
+    <div id="gsub-g">
+    <div class="card">
+      <h2>💪 Gym & Health – இன்னைக்கு</h2>
+      <div class="info">இந்த checklist தினமும் இரவு 12 மணிக்கு தானா reset ஆகும் ♻️ (Study data எதுவும் அழியாது)</div>
+      <div class="sum" id="gym-sum"></div>
+      <div class="bar lt"><div id="gym-bar"></div></div>
+      <div id="gym-list"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>🧼 Personal Care – இன்னைக்கு</h2>
+      <div class="sum" id="care-sum"></div>
+      <div class="bar lt"><div id="care-bar"></div></div>
+      <div id="care-list"></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>📈 Monthly Consistency – Gym & Health</h2>
+      <div class="info">தினமும் Gym + Personal Care checklist-ல check பண்ணது இங்க தானா பதிவாகும். மாசத்துல எவ்ளோ consistent-ஆ இருக்கீங்கன்னு பாருங்க. (Day ✅ = 80%க்கு மேல முடிச்சா)</div>
+      <div class="cal-nav"><button type="button" id="gt-prev" title="முந்தைய மாசம்">◀</button><b id="gt-title"></b><button type="button" id="gt-next" title="அடுத்த மாசம்">▶</button></div>
+      <div class="stats">
+        <div class="stat ok"><b id="gt-pc">--</b><small>Consistency %</small></div>
+        <div class="stat"><b id="gt-good">0</b><small>Good days (80%+)</small></div>
+        <div class="stat"><b id="gt-full">0</b><small>Full days (100%)</small></div>
+        <div class="stat"><b id="gt-str">0</b><small>🔥 Current streak</small></div>
+        <div class="stat"><b id="gt-best">0</b><small>🏅 Best streak</small></div>
+      </div>
+      <div class="bar lt"><div id="gt-bar"></div></div>
+      <div class="sum" id="gt-txt"></div>
+      <div class="cal" id="gt-cal"></div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:12px;margin:10px 0 14px;color:var(--muted)">
+        <span>⬜ எதுவும் இல்ல</span><span>🟥 &lt;50%</span><span>🟧 50–79%</span><span>🟩 80%+</span>
+      </div>
+      <h3 style="font-size:15px;margin:6px 0 8px">ஒவ்வொரு habit-ம் இந்த மாசம்</h3>
+      <div id="gt-items"></div>
+    </div>
+    </div>
+    <div id="gsub-b" style="display:none">
+    <div class="card">
+      <h2>🪣 Bucket List & 🎯 Goals</h2>
+      <div class="info">உனக்கு பிடிச்சதை நீயே add பண்ணு. முடிச்சதும் check பண்ணு ✅ (இது daily reset ஆகாது, அழியாது).</div>
+      <div class="sum" id="bk-sum"></div>
+      <div class="bar lt"><div id="bk-bar"></div></div>
+      <div class="row field" style="flex-wrap:wrap">
+        <select id="bk-type" aria-label="Type"><option value="bucket">🪣 Bucket List</option><option value="goal">🎯 Goal</option></select>
+        <input type="text" id="bk-in" placeholder="உதா: Ladakh trip போகணும் / 75 kg ஆகணும்" style="flex:1;min-width:180px">
+        <button type="button" class="btn auto" id="bk-add">Add</button>
+      </div>
+      <h3 style="font-size:15px;margin:10px 0 6px">🪣 Bucket List</h3>
+      <div id="bk-list-bucket"></div>
+      <h3 style="font-size:15px;margin:14px 0 6px">🎯 Goals</h3>
+      <div id="bk-list-goal"></div>
+    </div>
+    </div>
+    <div id="gsub-h" style="display:none">
+    <div class="card">
+      <h2>🌟 Habits – என் Best Qualities</h2>
+      <div class="info">உன்னோட நல்ல பழக்கங்கள், best qualities-ஐ நீயே add பண்ணு. அழியாது, எப்போ வேணாலும் பார்த்து motivate ஆகலாம் 💪</div>
+      <div class="sum" id="hb-sum"></div>
+      <div class="row field" style="flex-wrap:wrap">
+        <input type="text" id="hb-in" placeholder="உதா: Discipline, காலைல சீக்கிரம் எழுந்திருப்பேன், Hard work" style="flex:1;min-width:180px">
+        <button type="button" class="btn auto" id="hb-add">Add</button>
+      </div>
+      <div id="hb-list"></div>
+    </div>
+    </div>
+    <div id="gsub-s" style="display:none">
+    <div class="card">
+      <h2>📱 Social Media Time Tracker</h2>
+      <div class="info">Instagram, YouTube, Snapchat மாதிரி app-ல எவ்ளோ நேரம் use பண்ணீங்கன்னு note பண்ணுங்க. (Phone-ல Settings → Screen Time / Digital Wellbeing-ல பார்த்து இங்க போடுங்க)</div>
+      <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:12px">
+        <button type="button" class="btn auto" id="sm-prev">◀</button>
+        <b id="sm-title" style="font-size:17px"></b>
+        <button type="button" class="btn auto" id="sm-next">▶</button>
+      </div>
+      <div class="stats">
+        <div class="stat bad"><b id="sm-today">0m</b><small>இன்னைக்கு</small></div>
+        <div class="stat"><b id="sm-month">0m</b><small>இந்த மாச மொத்தம்</small></div>
+        <div class="stat"><b id="sm-avg">0m</b><small>Daily average</small></div>
+        <div class="stat ok"><b id="sm-over">0</b><small>Limit-குள்ள இருந்த நாள்</small></div>
+      </div>
+      <div class="sum" id="sm-lsum"></div>
+      <div class="bar lt"><div id="sm-lbar"></div></div>
+      <div class="row field" style="flex-wrap:wrap;align-items:center">
+        <label for="sm-lim" style="font-weight:600;font-size:14px">⏱️ Daily Limit (நிமிடம்)</label>
+        <input type="number" id="sm-lim" min="0" step="5" placeholder="உதா: 60" style="max-width:140px">
+        <button type="button" class="btn auto gold" id="sm-lset">Set</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>➕ நேரம் Add பண்ணு</h2>
+      <div class="row field" style="flex-wrap:wrap;align-items:center">
+        <input type="date" id="sm-d" aria-label="Date">
+        <select id="sm-app" aria-label="App"></select>
+        <input type="number" id="sm-h" min="0" step="1" placeholder="மணி" style="max-width:90px">
+        <input type="number" id="sm-m" min="0" max="59" step="1" placeholder="நிமிடம்" style="max-width:110px">
+        <button type="button" class="btn auto" id="sm-add">Add</button>
+      </div>
+      <div class="row field" style="flex-wrap:wrap;align-items:center">
+        <input type="text" id="sm-new" placeholder="புது app சேர்க்க (உதா: WhatsApp, Facebook)" style="flex:1;min-width:180px">
+        <button type="button" class="btn auto gold" id="sm-newadd">App Add</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>📊 App வாரியா (இந்த மாசம்)</h2>
+      <div id="sm-apps"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>📅 நாள் வாரியா</h2>
+      <div id="sm-days"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>🧾 இந்த மாச entries</h2>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr style="text-align:left"><th style="padding:6px">Date</th><th style="padding:6px">App</th><th style="padding:6px;text-align:right">நேரம்</th><th></th></tr></thead><tbody id="sm-rows"></tbody></table></div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Finance -->
+  <div class="panel" id="p-fin">
+    <div class="tabs" id="fin-tabs" style="margin-bottom:16px">
+      <button type="button" class="tab on" data-f="exp">💸 Expenses</button>
+      <button type="button" class="tab" data-f="sav">🏦 Savings</button>
+    </div>
+    <div id="fin-exp">
+    <div class="card">
+      <h2>💰 Expense Tracker</h2>
+      <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:12px">
+        <button type="button" class="btn auto" id="fin-prev">◀</button>
+        <b id="fin-title" style="font-size:17px"></b>
+        <button type="button" class="btn auto" id="fin-next">▶</button>
+      </div>
+      <div class="stats">
+        <div class="stat bad"><b id="fin-tot">₹0</b><small>இந்த மாச மொத்த செலவு</small></div>
+        <div class="stat"><b id="fin-today">₹0</b><small>இன்னைக்கு செலவு</small></div>
+        <div class="stat"><b id="fin-cnt">0</b><small>Entries</small></div>
+        <div class="stat ok"><b id="fin-left">—</b><small>Budget மீதி</small></div>
+      </div>
+      <div class="sum" id="fin-bsum"></div>
+      <div class="bar lt"><div id="fin-bbar"></div></div>
+      <div class="row field" style="flex-wrap:wrap;align-items:center">
+        <label for="fin-bud" style="font-weight:600;font-size:14px">🎯 Monthly Budget ₹</label>
+        <input type="number" id="fin-bud" min="0" step="1" placeholder="உதா: 5000" style="max-width:160px">
+        <button type="button" class="btn auto gold" id="fin-bset">Set</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>➕ புது செலவு Add பண்ணு</h2>
+      <div class="row field" style="flex-wrap:wrap">
+        <input type="date" id="fin-d" aria-label="Date">
+        <select id="fin-c" aria-label="Category"></select>
+        <input type="number" id="fin-a" min="0" step="0.01" placeholder="தொகை ₹" style="max-width:150px">
+      </div>
+      <div class="row field"><input type="text" id="fin-n" placeholder="குறிப்பு (உதா: Lunch, Petrol, Book)"><button type="button" class="btn auto" id="fin-add">Add</button></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>📊 Category வாரியா</h2>
+      <div id="fin-cats"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>🧾 இந்த மாச செலவுகள்</h2>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr style="text-align:left"><th style="padding:6px">Date</th><th style="padding:6px">Category</th><th style="padding:6px">குறிப்பு</th><th style="padding:6px;text-align:right">தொகை</th><th></th></tr></thead><tbody id="fin-rows"></tbody></table></div>
+    </div>
+    </div>
+
+    <div id="fin-sav" style="display:none">
+      <div class="card">
+        <h2>🏦 Savings</h2>
+        <div class="row" style="align-items:center;justify-content:space-between;margin-bottom:12px">
+          <button type="button" class="btn auto" id="sv-prev">◀</button>
+          <b id="sv-title" style="font-size:17px"></b>
+          <button type="button" class="btn auto" id="sv-next">▶</button>
+        </div>
+        <div class="stats">
+          <div class="stat ok"><b id="sv-bal">₹0</b><small>மொத்த Savings</small></div>
+          <div class="stat"><b id="sv-net">₹0</b><small>இந்த மாச சேமிப்பு</small></div>
+          <div class="stat"><b id="sv-in">₹0</b><small>இந்த மாசம் Save</small></div>
+          <div class="stat bad"><b id="sv-out">₹0</b><small>இந்த மாசம் Withdraw</small></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h2>🎯 Savings Goal</h2>
+        <div class="sum" id="sv-gsum"></div>
+        <div class="bar lt"><div id="sv-gbar"></div></div>
+        <div class="row field" style="flex-wrap:wrap;align-items:center">
+          <input type="text" id="sv-gn" placeholder="Goal பெயர் (உதா: Laptop, Emergency fund)" style="flex:1;min-width:160px">
+          <input type="number" id="sv-ga" min="0" step="1" placeholder="இலக்கு ₹" style="max-width:150px">
+          <button type="button" class="btn auto gold" id="sv-gset">Set</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h2>➕ Savings Add பண்ணு</h2>
+        <div class="row field" style="flex-wrap:wrap">
+          <input type="date" id="sv-d" aria-label="Date">
+          <select id="sv-t" aria-label="Type"><option value="in">➕ Save</option><option value="out">➖ Withdraw</option></select>
+          <input type="number" id="sv-a" min="0" step="0.01" placeholder="தொகை ₹" style="max-width:150px">
+        </div>
+        <div class="row field"><input type="text" id="sv-n" placeholder="குறிப்பு (உதா: Salary மிச்சம், Pocket money, Bank RD)"><button type="button" class="btn auto" id="sv-add">Add</button></div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h2>📅 மாசம் வாரியா Savings</h2>
+        <div id="sv-months"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h2>🧾 இந்த மாச Savings entries</h2>
+        <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr style="text-align:left"><th style="padding:6px">Date</th><th style="padding:6px">Type</th><th style="padding:6px">குறிப்பு</th><th style="padding:6px;text-align:right">தொகை</th><th></th></tr></thead><tbody id="sv-rows"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+<div class="foot">
+<div class="wm" aria-hidden="true">SAGO<i>&#10084;</i></div>
+<button id="theme-fab" class="theme-btn" type="button"></button>
+</div>
+<div id="rem-alert"></div>
+<div id="toast"></div>
+
+<script>
+/* ===== USERS: login id / password இங்க மாத்தலாம் ===== */
+/* old username -> new username: pazhaya saved data-vai maaraama edukka */
+const LEGACY={gowthamsam:"gowtham",samgowtham:"samya"};
+const USERS={
+  gowthamsam:{pass:"Sago@0320",name:"Gowtham",exams:["tnpsc","ssc","rrb"]},
+  samgowtham:{pass:"Sago@0320",name:"Samya",exams:["ssc","rrb"]}
+};
+
+/* ===== SYLLABUS ('|' போட்டு topics பிரிக்கப்பட்டிருக்கு) ===== */
+const EX={
+ tnpsc:{label:"TNPSC",info:"Group 4: மொத்தம் 200 கேள்விகள் · 300 மதிப்பெண் · 3 மணி நேரம். Part A General Tamil (100 Q), Part B General Studies (75 Q) + Aptitude & Mental Ability (25 Q). Notification-ல pattern-ஐ confirm பண்ணுங்க.",
+  sec:{
+  "General Tamil":"எழுத்து இலக்கணம்|சொல் & பொருள் இலக்கணம்|யாப்பு & அணி இலக்கணம்|பிழை திருத்தம் & பொருத்துக|சங்க இலக்கியம்|திருக்குறள் & அறநூல்கள்|காப்பியங்கள் & பக்தி இலக்கியம்|நவீன இலக்கியம்|தமிழ் அறிஞர்கள் & நூலாசிரியர்கள்",
+  "General Studies":"History of India & National Movement|Indian Culture & Heritage|Indian Polity & Constitution|Geography (India & Tamil Nadu)|Indian Economy|General Science (Physics, Chemistry, Biology)|Tamil Nadu History, Culture & Social Reforms|Tamil Nadu Administration & Schemes|Current Affairs",
+  "Aptitude & Mental Ability":"Percentage, Profit & Loss|Ratio, Proportion & Average|Simple & Compound Interest|Time & Work, Speed & Distance|LCM, HCF & Number System|Number Series & Coding-Decoding|Logical Reasoning & Puzzles|Data Interpretation"}},
+ ssc:{label:"SSC",info:"CGL / CHSL Tier 1: 100 கேள்விகள் · 200 மதிப்பெண் · 60 நிமிஷம் · தவறான பதிலுக்கு negative marking. Reasoning, Quant, English, GA – ஒவ்வொன்றும் 25 Q. Tier 2 pattern தனி, notification பாருங்க.",
+  sec:{
+  "General Intelligence & Reasoning":"Analogy & Classification|Number & Alphabet Series|Coding-Decoding|Blood Relations|Direction & Distance|Syllogism & Venn Diagram|Order & Ranking|Matrix, Paper Folding & Non-Verbal|Analogy (Word, Number & Letter)|Classification / Odd One Out|Number Series|Alphabet Series|Missing Number (Matrix & Figure)|Letter & Number Coding|Decoding & Coded Inequalities|Mathematical Operations|Blood Relations & Family Tree|Direction Sense|Distance & Shadow Problems|Syllogism|Venn Diagram|Alphabetical & Dictionary Order|Word Formation & Meaningful Words|Sitting Arrangement (Linear & Circular)|Puzzles (Box, Floor & Day based)|Statement & Conclusions|Statement & Assumptions|Statement & Arguments|Data Sufficiency|Clock & Calendar|Cubes & Dice|Counting Figures|Embedded Figures|Mirror & Water Image|Paper Folding & Cutting|Figure Completion|Figure Series & Pattern|Non-Verbal Analogy & Classification|Matrix",
+  "Quantitative Aptitude":"Number System & Simplification|Percentage, Profit & Loss, Discount|Ratio, Average & Mixture|Time-Work, Time-Speed-Distance|SI & CI|Algebra|Geometry & Mensuration|Trigonometry|Data Interpretation|Simplification & BODMAS|Square Root & Cube Root|Surds & Indices|Divisibility Rules & Remainders|Unit Digit & Number of Zeros|Fractions & Decimals|Approximation & Estimation|HCF & LCM|Percentage|Profit & Loss|Discount, Marked Price & Successive Discount|Partnership|Ratio & Proportion|Average|Problems on Ages|Mixture & Alligation|Time & Work|Pipes & Cisterns|Work & Wages|Time, Speed & Distance|Problems on Trains|Boats & Streams|Races & Circular Tracks|Simple Interest|Compound Interest|Linear Equations (1 & 2 variables)|Quadratic Equations|Algebraic Identities & Factorisation|Polynomials & Remainder Theorem|Inequalities & Maxima-Minima|Lines & Angles|Triangles (Congruence, Similarity, Centres)|Circles (Chords, Tangents, Angles)|Quadrilaterals & Polygons|Coordinate Geometry|Mensuration 2D (Area & Perimeter)|Mensuration 3D (Volume & Surface Area)|Trigonometric Ratios & Identities|Complementary Angles|Heights & Distances|Mean, Median & Mode|Data Interpretation – Tables|Data Interpretation – Bar & Line Graph|Data Interpretation – Pie Chart|Calendar & Clock",
+  "English Language":"Reading Comprehension|Cloze Test|Error Spotting|Fill in the Blanks|Synonyms & Antonyms|Idioms & Phrases|One Word Substitution|Active-Passive & Narration|Sentence Improvement & Para Jumbles",
+  "General Awareness":"History & Culture|Geography|Indian Polity|Economy|General Science|Static GK (Books, Awards, Sports)|Current Affairs"}},
+ rrb:{label:"RRB",info:"NTPC CBT-1: 100 கேள்விகள் · 90 நிமிஷம் · General Awareness 40, Mathematics 30, Reasoning 30 · தவறுக்கு 1/3 negative. Group D CBT: Science 25, Maths 25, Reasoning 30, GA 20.",
+  sec:{
+  "Mathematics":"Number System & BODMAS|Fractions & Decimals|LCM, HCF|Ratio & Proportion|Percentage|Profit & Loss|Time & Work|Time, Speed & Distance|SI & CI|Algebra|Geometry & Trigonometry|Mensuration|Elementary Statistics|Natural, Whole, Integers & Rational Numbers|Divisibility Rules|Simplification|Decimals|Fractions|Square Root & Cube Root|Surds & Indices|HCF|LCM|Ratio|Proportion|Average|Problems on Ages|Profit|Loss|Discount|Partnership|Mixture & Alligation|Pipes & Cistern|Time & Distance|Problems on Trains|Boats & Streams|Simple Interest|Compound Interest|Linear Equations|Quadratic Equations|Algebraic Identities & Factorisation|Lines & Angles|Triangles|Circles|Quadrilaterals & Polygons|Trigonometric Ratios & Identities|Heights & Distances|Mensuration 2D (Area & Perimeter)|Mensuration 3D (Volume & Surface Area)|Mean, Median & Mode|Bar Graph, Pie Chart & Histogram|Calendar|Clock",
+  "General Intelligence & Reasoning":"Analogies & Classification|Number & Alphabet Series|Coding-Decoding|Mathematical Operations|Relationships & Directions|Syllogism & Venn Diagram|Data Sufficiency|Statement & Conclusions|Analytical Reasoning|Jumbling|Analogy|Classification / Odd One Out|Number Series|Alphabet Series|Missing Number|Coding|Decoding|Blood Relations|Direction Sense|Order & Ranking|Syllogism|Venn Diagram|Data Interpretation|Conclusions & Decision Making|Similarities & Differences|Statement – Arguments & Assumptions|Sitting Arrangement|Puzzles|Clock & Calendar|Cubes & Dice|Counting Figures|Embedded Figures|Mirror & Water Image|Paper Folding|Figure Series|Word Formation|Coded Inequalities",
+  "General Awareness":"Current Affairs|Indian History|Geography|Indian Polity|Indian Economy|Sports, Awards & Culture|Basic Computer Knowledge",
+  "General Science (Group D – 10th level)":"Physics|Chemistry|Biology & Human Body|Environment & Everyday Science"}}
+};
+for(const e of Object.values(EX))for(const k in e.sec)e.sec[k]=e.sec[k].split("|");
+
+/* ===== Suggested 12-hour plan: [routine, study?] ===== */
+const DEF=[["தூக்கம்",0],["தூக்கம்",0],["தூக்கம்",0],["தூக்கம்",0],
+["எழுந்து fresh up & உடற்பயிற்சி",0],["General Tamil",1],["Maths / Aptitude",1],["காலை உணவு & ready",0],["Reasoning",1],["General Studies – History",1],["General Studies – Polity / Geography",1],["Revision & notes",1],
+["மதிய உணவு & ஓய்வு",0],["English",1],["General Awareness / Science",1],["Mock test",1],["Mock test analysis",1],
+["நடை / tea break",0],["Current Affairs",1],["இரவு உணவு",0],["Weak topics revision",1],["நாளை plan & relax",0],
+["தூக்கம்",0],["தூக்கம்",0]];
+
+const $=id=>document.getElementById(id),Q=s=>[...document.querySelectorAll(s)];
+let now,Y,M,TD,MK,DIM;
+function setDate(){now=new Date();Y=now.getFullYear();M=now.getMonth();TD=now.getDate();MK=Y+"-"+(M+1);DIM=new Date(Y,M+1,0).getDate()}
+setDate();
+const dk=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+let user=null,S=null,exam="tnpsc",tid=null,left=1500;
+
+function screen(id){Q(".screen").forEach(s=>s.classList.toggle("on",s.id===id));document.body.dataset.scr=id;if(typeof newBackground==="function"&&id!==bgScr){bgScr=id;newBackground()}}
+var bgScr="home";
+function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(()=>t.style.display="none",1800)}
+function load(){try{let v=localStorage.getItem("hub3-"+user);if(!v&&LEGACY[user])v=localStorage.getItem("hub3-"+LEGACY[user]);return JSON.parse(v)||{}}catch(e){return{}}}
+function save(msg){if(!user)return;try{localStorage.setItem("hub3-"+user,JSON.stringify(S));if(msg)toast("💾 Save ஆச்சு ✓")}catch(e){if(msg)toast("Save ஆகல – browser storage block ஆகியிருக்கு")}}
+
+
+/* ----- Rotating nature background (new scene each visit / screen change) ----- */
+const BG_PHOTOS=[
+  "photo-1506905925346-21bda4d32df4","photo-1464822759023-fed622ff2c3b","photo-1501785888041-af3ef285b470",
+  "photo-1469474968028-56623f02e42e","photo-1470071459604-3b5ec3a7fe05","photo-1441974231531-c6227db76b6e",
+  "photo-1433086966358-54859d0ed716","photo-1507525428034-b723cf961d3e","photo-1564507592333-c60657eea523",
+  "photo-1602216056096-3b40cc0c9944","photo-1526392060635-9d6019884377","photo-1570077188670-e3a8d69ac5ff",
+  "photo-1519681393784-d120267933ba","photo-1472214103451-9374bd1c798e","photo-1439066615861-d1af74d74000",
+  "photo-1505118380757-91f5f5632de0"
+].map(id=>"https://images.unsplash.com/"+id+"?auto=format&fit=crop&w=1920&q=70");
+let bgFlip=0,bgBusy=false;
+function sceneSVG(){
+  const W=1600,H=900,r=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
+  const T=pick([
+    {sky:["#5f4b8b","#f78fb3","#ffd9a0"],sun:"#fff3c4",ridge:["#8a6a9a","#5f4b86","#3a3470","#221f4a"],water:"#ffb3c1",stars:0},
+    {sky:["#8cc8f0","#cfeaff","#fff4d6"],sun:"#fffbe0",ridge:["#a5c4d4","#6fa5b0","#478a8e","#2f6468"],water:"#a9d9ea",stars:0},
+    {sky:["#e9a3a0","#ffc59a","#fde2b3"],sun:"#fff1bf",ridge:["#a98bb0","#7a699a","#4c4580","#2b2858"],water:"#ffd2b5",stars:0},
+    {sky:["#0b1026","#1c2452","#3b3a7a"],sun:"#f4f1de",ridge:["#2f3670","#232958","#181c40","#0d1029"],water:"#38428a",stars:1}
+  ]);
+  const ridge=(base,amp,fill)=>{
+    const pts=[];for(let x=-100;x<=W+100;x+=r(90,150))pts.push([x,base-r(0,amp)]);
+    let d="M-100 "+H+" L"+pts[0][0]+" "+pts[0][1];
+    for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];d+=" Q"+a[0]+" "+a[1]+" "+((a[0]+b[0])/2)+" "+((a[1]+b[1])/2)}
+    return '<path d="'+d+' L'+(W+100)+" "+H+' Z" fill="'+fill+'"/>';
+  };
+  const sx=r(W*.18,W*.82),sy=T.stars?r(120,220):r(200,330);
+  let g='<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+T.sky[0]+'"/><stop offset=".55" stop-color="'+T.sky[1]+'"/><stop offset="1" stop-color="'+T.sky[2]+'"/></linearGradient><radialGradient id="o"><stop offset="0" stop-color="'+T.sun+'" stop-opacity=".95"/><stop offset=".25" stop-color="'+T.sun+'" stop-opacity=".35"/><stop offset="1" stop-color="'+T.sun+'" stop-opacity="0"/></radialGradient></defs>';
+  g+='<rect width="'+W+'" height="'+H+'" fill="url(#s)"/>';
+  if(T.stars)for(let i=0;i<90;i++)g+='<circle cx="'+r(0,W)+'" cy="'+r(0,H*.5)+'" r="'+r(.6,1.8)+'" fill="#fff" opacity="'+r(.35,.95)+'"/>';
+  g+='<circle cx="'+sx+'" cy="'+sy+'" r="'+(T.stars?260:340)+'" fill="url(#o)"/><circle cx="'+sx+'" cy="'+sy+'" r="'+(T.stars?34:52)+'" fill="'+T.sun+'"/>';
+  g+=ridge(H*.5,170,T.ridge[0])+ridge(H*.6,150,T.ridge[1])+ridge(H*.7,120,T.ridge[2]);
+  const rx=r(W*.35,W*.65);
+  g+='<path d="M'+(rx-30)+" "+H*.66+" C"+(rx-60)+" "+H*.78+" "+(rx-340)+" "+H*.86+" "+(rx-520)+" "+H+" L"+(rx+560)+" "+H+" C"+(rx+360)+" "+H*.86+" "+(rx+70)+" "+H*.78+" "+(rx+34)+" "+H*.66+' Z" fill="'+T.water+'" opacity=".9"/>';
+  for(let i=0;i<7;i++){const y=r(H*.72,H*.97),x=rx+r(-260,260);g+='<path d="M'+x+" "+y+" h"+r(60,170)+'" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>'}
+  g+=ridge(H*.86,90,T.ridge[3]);
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+" "+H+'" preserveAspectRatio="xMidYMid slice">'+g+'</svg>';
+}
+function applyBg(css){
+  const L=Q("#bg .bg-l"),nxt=L[bgFlip^1],cur=L[bgFlip];
+  nxt.style.backgroundImage=css;nxt.classList.add("on");cur.classList.remove("on");bgFlip^=1;
+}
+function newBackground(){
+  if(bgBusy)return;bgBusy=true;
+  let last=-1;try{last=parseInt(localStorage.getItem("bg-last"),10)}catch(e){}
+  const idx=BG_PHOTOS.map((_,i)=>i).filter(i=>i!==last).sort(()=>Math.random()-.5).slice(0,3);
+  const done=()=>{bgBusy=false};
+  const scene=()=>{applyBg('url("data:image/svg+xml;utf8,'+encodeURIComponent(sceneSVG())+'")');done()};
+  const next=()=>{
+    if(!idx.length)return scene();
+    const i=idx.shift(),im=new Image();
+    const t=setTimeout(()=>{im.onload=im.onerror=null;next()},7000);
+    im.onload=()=>{clearTimeout(t);try{localStorage.setItem("bg-last",i)}catch(e){}applyBg('url("'+BG_PHOTOS[i]+'")');done()};
+    im.onerror=()=>{clearTimeout(t);next()};
+    im.src=BG_PHOTOS[i];
+  };
+  next();
+}
+newBackground();
+setInterval(newBackground,10*60*1000);
+
+/* ----- Home / Login ----- */
+/* ----- Captcha ----- */
+let capCode="";
+const rnd=m=>{if(window.crypto&&crypto.getRandomValues){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%m}return Math.floor(Math.random()*m)};
+function newCaptcha(){
+  const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",n=5,c=$("cap"),x=c.getContext("2d");
+  capCode="";for(let i=0;i<n;i++)capCode+=A[rnd(A.length)];
+  x.clearRect(0,0,c.width,c.height);
+  x.fillStyle="#F6F4FF";x.fillRect(0,0,c.width,c.height);
+  for(let i=0;i<7;i++){x.strokeStyle="rgba("+(80+rnd(90))+","+(70+rnd(70))+","+(150+rnd(90))+",.55)";x.lineWidth=1+rnd(2);x.beginPath();x.moveTo(rnd(c.width),rnd(c.height));x.bezierCurveTo(rnd(c.width),rnd(c.height),rnd(c.width),rnd(c.height),rnd(c.width),rnd(c.height));x.stroke()}
+  for(let i=0;i<50;i++){x.fillStyle="rgba(31,27,58,"+(.2+rnd(40)/100)+")";x.fillRect(rnd(c.width),rnd(c.height),2,2)}
+  const step=(c.width-24)/n;
+  for(let i=0;i<n;i++){
+    x.save();
+    x.translate(12+step*i+step/2,c.height/2+rnd(9)-4);
+    x.rotate((rnd(41)-20)*Math.PI/180);
+    x.font="bold "+(26+rnd(8))+"px 'Courier New',monospace";
+    x.textAlign="center";x.textBaseline="middle";
+    x.fillStyle=["#1F1B3A","#5646E0","#4335B8","#8a5a00"][rnd(4)];
+    x.fillText(capCode[i],0,0);
+    x.restore();
+  }
+  x.strokeStyle="rgba(31,27,58,.6)";x.lineWidth=1.5;x.beginPath();x.moveTo(0,10+rnd(c.height-20));x.bezierCurveTo(c.width/3,rnd(c.height),c.width*2/3,rnd(c.height),c.width,10+rnd(c.height-20));x.stroke();
+  $("lc").value="";
+}
+$("cap-r").onclick=()=>{newCaptcha();$("lc").focus()};
+
+$("go-login").onclick=()=>{screen("auth");$("err").style.display="none";newCaptcha()};
+$("eye").onclick=()=>{const p=$("lp"),s=p.type==="password";p.type=s?"text":"password";$("eye").textContent=s?"HIDE":"SHOW"};
+$("auth").addEventListener("submit",e=>{
+  e.preventDefault();
+  const u=$("lu").value.trim().toLowerCase(),p=$("lp").value;
+  if($("lc").value.trim().toUpperCase()!==capCode){
+    $("err").textContent="Captcha தவறு. மறுபடி try பண்ணுங்க.";$("err").style.display="block";newCaptcha();$("lc").focus();return;
+  }
+  if(Object.prototype.hasOwnProperty.call(USERS,u)&&USERS[u].pass===p){
+    $("err").style.display="none";user=u;$("lc").value="";
+    S=Object.assign({notes:"",checks:{},targets:{},plan:DEF.map(x=>({t:x[0],s:x[1]})),logs:[],cal:{},pct:{},rank:{},daily:{d:"",done:{},gym:{},care:{}},planV:0},load());
+    for(const k in S.checks)if(S.pct[k]==null)S.pct[k]=100;
+    if(S.planV!==3){S.plan=DEF.map(x=>({t:x[0],s:x[1]}));S.planV=3}
+    setDate();ensureToday();save();
+    screen("app");init();
+  }else{$("err").textContent="Username அல்லது Password தவறு. மறுபடி try பண்ணுங்க.";$("err").style.display="block";newCaptcha()}
+});
+$("logout").onclick=()=>{save();rkExam=null;user=null;S=null;$("lp").value="";screen("home")};
+$("save").onclick=()=>save(true);
+
+/* ----- Tabs ----- */
+const STUDY=["p-syl","p-tgt","p-att"];let lastStudy="p-syl";
+function showTab(id){
+  const st=STUDY.includes(id);if(st)lastStudy=id;
+  Q(".tab[data-p]").forEach(x=>x.classList.toggle("on",x.dataset.p===id));
+  $("tab-study").classList.toggle("on",st);
+  $("study-sub").style.display=st?"flex":"none";
+  Q("#study-sub .tab").forEach(x=>x.classList.toggle("on",x.dataset.sp===id));
+  Q(".panel").forEach(p=>p.classList.toggle("on",p.id===id));
+  if(id==="p-home")renderHome();
+  if(id==="p-att")renderAtt();
+  if(id==="p-fin")renderFin();
+}
+Q(".tab[data-p]").forEach(b=>b.onclick=()=>showTab(b.dataset.p));
+$("tab-study").onclick=()=>showTab(lastStudy);
+Q("#study-sub .tab").forEach(b=>b.onclick=()=>showTab(b.dataset.sp));
+
+const TAG={tnpsc:"Group 4: General Tamil, General Studies, Aptitude.",ssc:"CGL / CHSL: Reasoning, Quant, English, GA.",rrb:"NTPC / Group D: Maths, Reasoning, GA, Science."};
+const pc=id=>S.pct[id]||0;
+function examStat(k){let a=0,d=0,s=0;Object.values(EX[k].sec).forEach((it,si)=>it.forEach((_,i)=>{a++;const v=pc(k+si+"_"+i);s+=v;if(v===100)d++}));return[d,a,Math.round(s/a)]}
+function renderHome(){
+  const U=USERS[user],l=S.targets[MK]||[];
+  $("home-h").textContent="வணக்கம், "+U.name+"!";renderKural();
+  $("home-p").textContent="இன்னைக்கு படிச்சது: "+studyNums()[0]+" / "+studyNums()[1]+" மணி · இந்த மாச இலக்கு: "+l.filter(t=>t.d).length+"/"+l.length+" முடிஞ்சது";
+}
+
+function init(){
+  renderKural();
+  $("notes").value=S.notes;exam=USERS[user].exams[0];
+  renderExamTabs();renderSyl();renderTgt();renderPlan();renderGym();renderCare();logGym();renderGTrack();renderBucket();renderHabits();updStudy();renderRem();aY=null;aSel=null;renderAtt();showTab("p-home");
+}
+
+/* ----- Exam logos (drawn icon badges; real logo files can be dropped into LOGO_IMG) ----- */
+const LOGO_IMG={/* tnpsc:"data:image/png;base64,...", ssc:"...", rrb:"..." */};
+const LOGO_SVG={
+  tnpsc:()=>'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#FFB224"/><g fill="#1F1B3A"><rect x="8.5" y="25" width="15" height="2.2" rx=".6"/><path d="M10.2 25L11.6 20.4H20.4L21.8 25Z"/><path d="M12.3 20.4L13.4 16.4H18.6L19.7 20.4Z"/><path d="M14 16.4L14.8 13H17.2L18 16.4Z"/><path d="M15 13L16 9.2L17 13Z"/><circle cx="16" cy="7.6" r="1.2"/></g><rect x="14.8" y="21.6" width="2.4" height="3.4" fill="#FFB224"/></svg>',
+  ssc:()=>{let sp="";for(let i=0;i<12;i++){const a=i*Math.PI/6;sp+='<line x1="'+(16+2.6*Math.cos(a)).toFixed(2)+'" y1="'+(16+2.6*Math.sin(a)).toFixed(2)+'" x2="'+(16+9.4*Math.cos(a)).toFixed(2)+'" y2="'+(16+9.4*Math.sin(a)).toFixed(2)+'"/>'}return '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#17408F"/><g stroke="#fff" stroke-width="1.1" fill="none"><circle cx="16" cy="16" r="10.2" stroke-width="1.7"/>'+sp+'</g><circle cx="16" cy="16" r="2.2" fill="#fff"/></svg>'},
+  rrb:()=>'<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#C62828"/><rect x="8.5" y="7.5" width="15" height="13.5" rx="3.6" fill="#fff"/><rect x="10.6" y="9.8" width="4.5" height="4.6" rx="1" fill="#C62828"/><rect x="16.9" y="9.8" width="4.5" height="4.6" rx="1" fill="#C62828"/><circle cx="12.2" cy="18" r="1.15" fill="#C62828"/><circle cx="19.8" cy="18" r="1.15" fill="#C62828"/><path d="M10 24.6L7.6 28M22 24.6L24.4 28M10.6 25.2H21.4" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>'
+};
+function examLogo(k){
+  const w=document.createElement("span");w.className="xlogo";w.setAttribute("aria-hidden","true");
+  if(LOGO_IMG[k]){const i=document.createElement("img");i.src=LOGO_IMG[k];i.alt="";w.appendChild(i)}
+  else if(LOGO_SVG[k])w.innerHTML=LOGO_SVG[k]();
+  return w;
+}
+function examTab(k,on){
+  const b=document.createElement("button");b.type="button";b.className="tab"+(on?" on":"");
+  b.appendChild(examLogo(k));const t=document.createElement("span");t.textContent=EX[k].label;b.appendChild(t);return b;
+}
+/* ----- Syllabus ----- */
+function renderExamTabs(){
+  const b=$("exam-tabs");b.innerHTML="";
+  for(const k of USERS[user].exams){
+    const x=examTab(k,k===exam);
+    x.onclick=()=>{exam=k;renderExamTabs();renderSyl()};b.appendChild(x);
+  }
+}
+function renderSyl(){
+  const E=EX[exam],box=$("syl");$("exam-info").textContent=E.info;box.innerHTML="";
+  Object.entries(E.sec).forEach(([name,items],si)=>{
+    const w=document.createElement("div");w.className="cat";
+    const t=document.createElement("div");t.className="cat-t";
+    const n=document.createElement("div");n.textContent=name;
+    const c=document.createElement("span");c.id="c-"+exam+si;
+    t.append(n,c);w.appendChild(t);
+    const sb=document.createElement("div"),sf=document.createElement("div");sb.className="sbar";sf.id="sb-"+exam+si;sb.appendChild(sf);w.appendChild(sb);
+    const g=document.createElement("div");g.className="sg";
+    items.forEach((txt,i)=>{
+      const id=exam+si+"_"+i,r=document.createElement("div");r.className="item";
+      const sp=document.createElement("span");sp.textContent=txt;
+      const sel=document.createElement("select");sel.setAttribute("aria-label",txt+" percentage");
+      for(let v=0;v<=100;v+=10){const o=document.createElement("option");o.value=v;o.textContent=v+"%";sel.appendChild(o)}
+      sel.value=pc(id);
+      const bar=document.createElement("div"),f=document.createElement("div");bar.className="mini";f.style.width=pc(id)+"%";bar.appendChild(f);
+      sel.onchange=()=>{const v=+sel.value;v?S.pct[id]=v:delete S.pct[id];f.style.width=v+"%";save();progress()};
+      const top=document.createElement("div");top.className="ptop";top.append(sp,sel);
+      r.append(top,bar);g.appendChild(r);
+    });
+    w.appendChild(g);box.appendChild(w);
+  });
+  progress();
+}
+function progress(){
+  let tot=0,sum=0;
+  for(const k of USERS[user].exams)Object.values(EX[k].sec).forEach((items,si)=>{
+    let s=0;items.forEach((_,i)=>s+=pc(k+si+"_"+i));
+    tot+=items.length;sum+=s;
+    const a=Math.round(s/items.length),c=$("c-"+k+si),b=$("sb-"+k+si);
+    if(c)c.textContent=a+"% முடிஞ்சது";if(b)b.style.width=a+"%";
+  });
+}
+/* ----- Monthly + Weekly targets ----- */
+const rid=()=>Math.random().toString(36).slice(2,9);
+const mList=()=>S.targets[MK]||(S.targets[MK]=[]);
+const wList=()=>{S.wk=S.wk||{};return S.wk[MK]||(S.wk[MK]=[])};
+const curWeek=()=>Math.ceil(TD/7);
+function renderTgt(){
+  const L=mList(),W=wList(),weeks=Math.ceil(DIM/7);
+  L.forEach(t=>{if(!t.id)t.id=rid()});
+  $("tgt-title").textContent="🎯 "+now.toLocaleString("en-IN",{month:"long",year:"numeric"})+" Target Plan";
+  /* monthly list */
+  const box=$("tgt-list");box.innerHTML="";
+  L.forEach((t,i)=>{
+    const r=document.createElement("div");r.className="t-row";
+    const cb=document.createElement("input");cb.type="checkbox";cb.checked=!!t.d;
+    cb.onchange=()=>{t.d=cb.checked;save();renderTgt()};
+    const sp=document.createElement("span");sp.textContent=t.t;
+    const rel=W.filter(x=>x.g===t.id);
+    if(rel.length){const sm=document.createElement("small");sm.style.cssText="display:block;color:var(--muted)";sm.textContent="🗓️ Weekly: "+rel.filter(x=>x.d).length+"/"+rel.length+" முடிஞ்சது";sp.appendChild(sm)}
+    const x=document.createElement("button");x.className="x";x.textContent="✕";x.title="நீக்கு";
+    x.onclick=()=>{L.splice(i,1);W.forEach(w=>{if(w.g===t.id)w.g=null});save();renderTgt()};
+    r.append(cb,sp,x);box.appendChild(r);
+  });
+  /* selects */
+  const ws=$("wk-w"),gs=$("wk-g"),pw=ws.value,pg=gs.value;
+  ws.innerHTML="";
+  for(let w=1;w<=weeks;w++){const o=document.createElement("option");o.value=w;o.textContent="Week "+w+" ("+((w-1)*7+1)+"–"+Math.min(w*7,DIM)+")"+(w===curWeek()?" ⭐":"");ws.appendChild(o)}
+  ws.value=pw&&+pw<=weeks?pw:String(curWeek());
+  gs.innerHTML="";const o0=document.createElement("option");o0.value="";o0.textContent="— Monthly link வேண்டாம் —";gs.appendChild(o0);
+  L.forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent="🔗 "+(t.t.length>28?t.t.slice(0,28)+"…":t.t);gs.appendChild(o)});
+  gs.value=pg;
+  /* weeks */
+  const wb=$("wk-weeks");wb.innerHTML="";
+  for(let w=1;w<=weeks;w++){
+    const a=(w-1)*7+1,b=Math.min(w*7,DIM),items=W.filter(x=>x.w===w),d=items.filter(x=>x.d).length,p=items.length-d;
+    const blk=document.createElement("div");blk.className="wk"+(w===curWeek()?" cur":"");
+    const h=document.createElement("div");h.className="wk-t";
+    const n=document.createElement("div");n.textContent="Week "+w+" · "+a+"–"+b+(w===curWeek()?" · ⭐ இந்த வாரம்":"");
+    const c=document.createElement("span");
+    c.textContent=items.length?d+"/"+items.length+" முடிஞ்சது · "+p+" pending":"இலக்கு இல்ல";
+    if(w<curWeek()&&p>0){c.className="late";c.textContent+=" ⚠️"}
+    h.append(n,c);blk.appendChild(h);
+    const sb=document.createElement("div"),sf=document.createElement("div");sb.className="sbar";sf.style.width=(items.length?Math.round(d/items.length*100):0)+"%";sb.appendChild(sf);blk.appendChild(sb);
+    const body=document.createElement("div");body.className="wk-b";
+    if(!items.length){const e=document.createElement("div");e.className="wk-e";e.textContent="இந்த வாரத்துக்கு இன்னும் இலக்கு சேர்க்கல.";body.appendChild(e)}
+    items.forEach(it=>{
+      const r=document.createElement("div");r.className="t-row";
+      const cb=document.createElement("input");cb.type="checkbox";cb.checked=!!it.d;
+      cb.onchange=()=>{it.d=cb.checked;save();renderTgt()};
+      const sp=document.createElement("span");sp.textContent=it.t;
+      const g=L.find(t=>t.id===it.g);
+      if(g){const sm=document.createElement("small");sm.style.cssText="display:block;color:var(--muted)";sm.textContent="🔗 "+g.t;sp.appendChild(sm)}
+      const x=document.createElement("button");x.className="x";x.textContent="✕";x.title="நீக்கு";
+      x.onclick=()=>{S.wk[MK]=W.filter(q=>q!==it);save();renderTgt()};
+      r.append(cb,sp,x);body.appendChild(r);
+    });
+    blk.appendChild(body);wb.appendChild(blk);
+  }
+  tSum();
+}
+function tSum(){
+  const L=mList(),W=wList(),md=L.filter(t=>t.d).length,wd=W.filter(x=>x.d).length;
+  $("tgt-sum").textContent=L.length?md+" / "+L.length+" இலக்குகள் முடிஞ்சது · "+(L.length-md)+" pending":"இன்னும் இலக்கு எதுவும் சேர்க்கல. மேல type பண்ணி Add அழுத்துங்க.";
+  $("s-mf").textContent=md;$("s-mp").textContent=L.length-md;$("s-wf").textContent=wd;$("s-wp").textContent=W.length-wd;
+  const tot=L.length+W.length,dn=md+wd,p=tot?Math.round(dn/tot*100):0;
+  $("tgt-all").textContent="மொத்த முன்னேற்றம்: "+p+"% ("+dn+"/"+tot+" முடிஞ்சது · "+(tot-dn)+" pending)";
+  $("tgt-bar").style.width=p+"%";
+  const cw=W.filter(x=>x.w===curWeek()),cd=cw.filter(x=>x.d).length;
+  $("tgt-week").textContent="⭐ இந்த வாரம் (Week "+curWeek()+"): "+(cw.length?cd+"/"+cw.length+" முடிஞ்சது · "+(cw.length-cd)+" pending":"இன்னும் weekly இலக்கு சேர்க்கல");
+}
+function addTgt(){
+  const v=$("tgt-in").value.trim();if(!v)return;
+  mList().push({id:rid(),t:v,d:false});
+  $("tgt-in").value="";save();renderTgt();
+}
+function addWk(){
+  const v=$("wk-in").value.trim();if(!v)return;
+  wList().push({id:rid(),t:v,d:false,w:+$("wk-w").value||curWeek(),g:$("wk-g").value||null});
+  $("wk-in").value="";save();renderTgt();
+}
+$("tgt-add").onclick=addTgt;
+$("tgt-in").addEventListener("keydown",e=>{if(e.key==="Enter")addTgt()});
+$("wk-add").onclick=addWk;
+$("wk-in").addEventListener("keydown",e=>{if(e.key==="Enter")addWk()});
+
+/* ----- Daily planner ----- */
+function lab(h){const f=n=>{const a=n%24;return((a%12)||12)+" "+(a<12?"AM":"PM")};return f(h)+" – "+f(h+1)}
+function renderPlan(){
+  const box=$("plan");box.innerHTML="";
+  const H={4:"🌅 காலை · 4 AM – 12 PM",12:"☀️ மதியம் · 12 PM – 4 PM",16:"🌆 மாலை · 4 PM – 8 PM",20:"🌙 இரவு · 8 PM – 10 PM"};
+  for(let h=4;h<22;h++){
+    const p=S.plan[h];
+    if(H[h]){const t=document.createElement("div");t.className="ph";t.textContent=H[h];box.appendChild(t)}
+    const r=document.createElement("div");r.className="slot"+(p.s?" study":"")+(p.s&&S.daily.done[h]?" done":"");r.dataset.h=h;
+    const b=document.createElement("b");b.textContent=lab(h);
+    const inp=document.createElement("input");inp.type="text";inp.value=p.t;inp.placeholder="என்ன பண்ணப்போறீங்க?";
+    inp.oninput=()=>{p.t=inp.value;save()};
+    const fl=document.createElement("div");fl.className="flags";
+    const l=document.createElement("label"),c=document.createElement("input");c.type="checkbox";c.checked=!!p.s;l.append(c,"படிப்பு");
+    const l2=document.createElement("label"),dc=document.createElement("input");dc.type="checkbox";dc.checked=!!S.daily.done[h];l2.append(dc,"✔ முடிஞ்சது");
+    l2.style.display=p.s?"":"none";
+    c.onchange=()=>{p.s=c.checked?1:0;if(!p.s){delete S.daily.done[h];dc.checked=false}
+      r.classList.toggle("study",!!p.s);r.classList.toggle("done",!!(p.s&&S.daily.done[h]));l2.style.display=p.s?"":"none";save();pSum();updStudy()};
+    dc.onchange=()=>{dc.checked?S.daily.done[h]=1:delete S.daily.done[h];r.classList.toggle("done",dc.checked);save();pSum();updStudy()};
+    fl.append(l,l2);r.append(b,inp,fl);box.appendChild(r);
+  }
+  pSum();markNow(new Date().getHours());
+}
+function studyNums(){const a=S.plan.slice(4,22);return[a.filter((p,i)=>p.s&&S.daily.done[i+4]).length,a.filter(p=>p.s).length]}
+function pSum(){const[d,n]=studyNums();$("plan-sum").textContent="இன்னைக்கு plan: "+n+" மணி நேர படிப்பு · முடிச்சது: "+d+" மணி"+(n&&d>=n?" ✓":"")}
+function updStudy(){}
+function markNow(hr){Q(".slot").forEach(s=>s.classList.toggle("now",+s.dataset.h===hr))}
+$("plan-reset").onclick=()=>{
+  if(!confirm("உங்க routine அழிஞ்சு suggested plan வரும். சரியா?"))return;
+  S.plan=DEF.map(x=>({t:x[0],s:x[1]}));S.daily.done={};save();renderPlan();updStudy();
+};
+
+/* ----- Reminders ----- */
+const remAt=r=>new Date(r.d+"T"+(r.t||"08:00")+":00");
+const remList=()=>S.rem||(S.rem=[]);
+let remQ=[];
+function remPerm(){
+  const el=$("rem-perm");
+  if(!("Notification" in window)){el.textContent="இந்த browser-ல notification support இல்ல; screen-ல alert வரும்.";return}
+  const p=Notification.permission;
+  el.textContent=p==="granted"?"✅ Notification ON":p==="denied"?"❌ Block ஆகியிருக்கு – browser site settings-ல Allow பண்ணுங்க":"இன்னும் allow பண்ணல – மேல button அழுத்துங்க";
+}
+function renderRem(){
+  const box=$("rem-list");box.innerHTML="";
+  const L=remList().slice().sort((a,b)=>remAt(a)-remAt(b));
+  if(!L.length){box.textContent="இன்னும் reminder எதுவும் இல்ல."}
+  L.forEach(r=>{
+    const row=document.createElement("div");row.className="log";
+    const sp=document.createElement("span");
+    const when=remAt(r).toLocaleString("en-IN",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:true});
+    sp.textContent=(r.f?"✓ ":"⏰ ")+when+" – "+r.n;
+    if(r.f)sp.style.color="var(--muted)";
+    const x=document.createElement("button");x.className="x";x.textContent="✕";x.title="நீக்கு";
+    x.onclick=()=>{S.rem=remList().filter(q=>q!==r&&q.id!==r.id);save();renderRem()};
+    row.append(sp,x);box.appendChild(row);
+  });
+  remPerm();
+}
+function beep(){try{const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.15;o.start();o.stop(a.currentTime+.6)}catch(e){}}
+function showRem(){
+  const b=$("rem-alert");b.innerHTML="";
+  const h=document.createElement("b");h.textContent="🔔 Reminder";b.appendChild(h);
+  remQ.forEach(t=>{const p=document.createElement("div");p.textContent=t;b.appendChild(p)});
+  const c=document.createElement("button");c.textContent="சரி ✓";c.onclick=()=>{remQ=[];b.style.display="none"};b.appendChild(c);
+  b.style.display="block";
+}
+function checkRem(){
+  const nw=new Date();let hit=false;
+  remList().forEach(r=>{
+    if(r.f)return;
+    const at=remAt(r);
+    if(at<=nw){
+      r.f=1;hit=true;const late=nw-at>120000;
+      try{if("Notification" in window&&Notification.permission==="granted")new Notification(late?"⏰ தவறிய Reminder":"🔔 Reminder",{body:r.n,tag:"rem"+r.id})}catch(e){}
+      remQ.push((late?"⏰ (தவறியது) ":"🔔 ")+r.n);
+    }
+  });
+  if(hit){save();renderRem();showRem();beep()}
+}
+$("rem-d").value=dk(new Date());
+$("rem-add").onclick=()=>{
+  const n=$("rem-n").value.trim(),d=$("rem-d").value,t=$("rem-t").value||"08:00";
+  if(!n||!d){alert("Reminder பெயர், Date இரண்டும் போடுங்க.");return}
+  remList().push({id:Date.now(),n,d,t});
+  $("rem-n").value="";save();renderRem();toast("🔔 Reminder set ஆச்சு");
+};
+$("rem-n").addEventListener("keydown",e=>{if(e.key==="Enter")$("rem-add").click()});
+$("rem-allow").onclick=()=>{
+  if(!("Notification" in window)){toast("இந்த browser-ல notification இல்ல");return}
+  Notification.requestPermission().then(remPerm).catch(remPerm);
+};
+
+
+$("notes").addEventListener("input",()=>{S.notes=$("notes").value;save()});
+/* ----- Rank Card (subject-wise marks & improvement) ----- */
+let rkExam=null;
+const fm=n=>Math.round(n*10)/10;
+const rkList=()=>{S.rank=S.rank||{};return S.rank[rkExam]||(S.rank[rkExam]=[])};
+function rkGrade(p){return p>=90?["A+","🏆 அருமை!"]:p>=75?["A","💪 நல்ல நிலை"]:p>=60?["B","👍 இன்னும் கொஞ்சம்"]:p>=40?["C","⚠️ கவனம் தேவை"]:["D","🔥 அதிக உழைப்பு தேவை"]}
+function rkSummary(){
+  const L=rkList();let s=0,t=0,g=0;
+  L.forEach(r=>{s+=r.s;t+=r.t;g+=r.g});
+  const p=t>0?s/t*100:0;
+  $("rk-who").textContent=USERS[user].name+" · "+EX[rkExam].label+" Rank Card";
+  $("rk-pct").textContent=t>0?fm(p)+"%":"--";
+  $("rk-grade").textContent=t>0?rkGrade(p)[0]:"-";
+  $("rk-tot").textContent=fm(s)+" / "+fm(t)+" மதிப்பெண்";
+  $("rk-goal").textContent=!L.length?"கீழே subject சேர்த்து marks போடுங்க.":(s>=g?"🎉 மொத்த Target எட்டியாச்சு (Target "+fm(g)+")":"Target "+fm(g)+" எடுக்க இன்னும் "+fm(g-s)+" மதிப்பெண் improve பண்ணணும்");
+  const need=L.filter(r=>r.t>0&&r.g>r.s).sort((a,b)=>(b.g-b.s)-(a.g-a.s));
+  const ol=$("rk-pri");ol.innerHTML="";
+  need.forEach(r=>{const li=document.createElement("li");li.textContent=r.n+" – இன்னும் "+fm(r.g-r.s)+" மதிப்பெண் ("+fm((r.g-r.s)/r.t*100)+"% அதிகம்) · இப்போ "+r.s+"/"+r.t;ol.appendChild(li)});
+  $("rk-first").textContent=!L.length?"இன்னும் subject எதுவும் சேர்க்கல.":need.length?"👉 முதல்ல focus பண்ண வேண்டியது: "+need[0].n:"✅ எல்லா subject-லும் Target எட்டியாச்சு! Target-ஐ இன்னும் உயர்த்துங்க 🔥";
+}
+function rkNum(lbl,val,cb){
+  const l=document.createElement("label");l.append(lbl);
+  const i=document.createElement("input");i.type="number";i.min="0";i.step="any";i.value=val;
+  i.oninput=()=>cb(parseFloat(i.value)||0);l.appendChild(i);return l;
+}
+function renderRank(){
+  const U=USERS[user];
+  if(!rkExam||!U.exams.includes(rkExam))rkExam=U.exams[0];
+  const tb=$("rk-tabs");tb.innerHTML="";
+  U.exams.forEach(k=>{
+    const x=examTab(k,k===rkExam);
+    x.onclick=()=>{rkExam=k;renderRank()};tb.appendChild(x);
+  });
+  const L=rkList(),box=$("rk-rows");box.innerHTML="";
+  L.forEach((r,i)=>{
+    const row=document.createElement("div");row.className="rk-row";
+    const h=document.createElement("div");h.className="rk-h";
+    const nm=document.createElement("b");nm.textContent=r.n;
+    const gd=document.createElement("span");gd.className="g";
+    const x=document.createElement("button");x.className="x";x.textContent="✕";x.title="நீக்கு";
+    x.onclick=()=>{if(!confirm(r.n+" நீக்கணுமா?"))return;L.splice(i,1);save();renderRank()};
+    h.append(nm,gd,x);
+    const bar=document.createElement("div"),f=document.createElement("div"),m=document.createElement("span");
+    bar.className="rk-bar";f.className="f";m.className="m";m.title="Target";bar.append(f,m);
+    const msg=document.createElement("div");msg.className="rk-msg";
+    const upd=()=>{
+      const p=r.t>0?r.s/r.t*100:0,tp=r.t>0?r.g/r.t*100:0;
+      f.style.width=Math.min(100,p)+"%";
+      f.style.background=p>=tp?"var(--ok)":p>=tp-15?"var(--gold)":"var(--bad)";
+      m.style.left=Math.min(99,tp)+"%";
+      gd.textContent=r.t>0?rkGrade(p)[0]+" · "+fm(p)+"%":"-";
+      msg.textContent=r.t<=0?"மொத்த மதிப்பெண் போடுங்க":r.g>r.s?"🎯 Target "+fm(r.g)+" எடுக்க இன்னும் "+fm(r.g-r.s)+" மதிப்பெண் improve பண்ணணும் ("+fm((r.g-r.s)/r.t*100)+"% அதிகம்)":"✅ Target எட்டியாச்சு! +"+fm(r.s-r.g)+" extra";
+      msg.style.color=r.t>0&&r.g<=r.s?"var(--ok)":"var(--ink)";
+    };
+    const ins=document.createElement("div");ins.className="rk-in";
+    ins.append(rkNum("எடுத்தது",r.s,v=>{r.s=v;upd();rkSummary();save()}),
+               rkNum("மொத்தம்",r.t,v=>{r.t=v;upd();rkSummary();save()}),
+               rkNum("Target",r.g,v=>{r.g=v;upd();rkSummary();save()}));
+    row.append(h,ins,bar,msg);box.appendChild(row);upd();
+  });
+  rkSummary();
+}
+function rkAdd(){
+  const n=$("rk-n").value.trim(),s=parseFloat($("rk-s").value),t=parseFloat($("rk-t").value);let g=parseFloat($("rk-g").value);
+  if(!n||isNaN(s)||isNaN(t)||t<=0){alert("Subject பெயர், எடுத்த மதிப்பெண், மொத்தம் மூணும் சரியா நிரப்புங்க.");return}
+  if(isNaN(g))g=fm(t*0.75);
+  rkList().push({n,s,t,g});
+  ["rk-n","rk-s","rk-t","rk-g"].forEach(id=>$(id).value="");
+  save();renderRank();$("rk-n").focus();
+}
+$("rk-add").onclick=rkAdd;
+["rk-n","rk-s","rk-t","rk-g"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter")rkAdd()}));
+$("rk-load").onclick=()=>{
+  const L=rkList();let c=0;
+  Object.keys(EX[rkExam].sec).forEach(n=>{if(!L.some(r=>r.n===n)){L.push({n,s:0,t:100,g:75});c++}});
+  save();renderRank();toast(c?"📥 "+c+" subjects சேர்த்தாச்சு (மொத்தம் 100, Target 75)":"எல்லா subjects-உம் ஏற்கனவே இருக்கு");
+};
+
+/* ----- Daily Attendance (register) ----- */
+let aY=null,aM=null,aSel=null;
+const ATT={P:["✅ Present","sp"],A:["❌ Absent","sa"],L:["🟡 Leave","sl"]};
+const attMap=()=>S.att||(S.att={});
+function attFix(A){
+  Object.values(A).forEach(e=>{
+    if(e.t&&/AM|PM/i.test(e.t)){
+      const m=e.t.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if(m){let h=+m[1]%12;if(m[3].toUpperCase()==="PM")h+=12;e.t=String(h).padStart(2,"0")+":"+m[2]}else delete e.t;
+    }
+  });
+}
+const nowHM=()=>{const d=new Date();return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")};
+const toMin=t=>{const m=/^(\d{2}):(\d{2})$/.exec(t||"");return m?(+m[1])*60+(+m[2]):null};
+const attDur=e=>{const a=toMin(e&&e.t),b=toMin(e&&e.o);return a!=null&&b!=null&&b>a?b-a:0};
+const hmFmt=min=>min?Math.floor(min/60)+"h "+String(min%60).padStart(2,"0")+"m":"—";
+const t12=t=>{const m=toMin(t);if(m==null)return "—";const h=Math.floor(m/60);return ((h%12)||12)+":"+String(m%60).padStart(2,"0")+" "+(h<12?"AM":"PM")};
+const attOK=()=>aSel===dk(new Date());
+function attMark(s){
+  if(!attOK()){renderAtt();return}
+  const A=attMap(),e=A[aSel];
+  if(e&&e.s===s)delete A[aSel];
+  else{
+    const o=e?Object.assign({},e):{};o.s=s;
+    if(s==="P"){if(aSel===dk(new Date())&&!o.t)o.t=nowHM()}else{delete o.t;delete o.o}
+    A[aSel]=o;
+  }
+  save();renderAtt();
+}
+function attTime(k,v){
+  if(!attOK()){renderAtt();return}
+  const A=attMap();let e=A[aSel];
+  if(!e||e.s!=="P"){if(!v)return;e=A[aSel]={s:"P",n:e&&e.n?e.n:undefined};if(e.n===undefined)delete e.n}
+  if(v)e[k]=v;else delete e[k];
+  save();renderAtt();
+}
+function attStreak(A){
+  const dt=new Date();let n=0;
+  if(!A[dk(dt)])dt.setDate(dt.getDate()-1);
+  for(let i=0;i<3650;i++){
+    const e=A[dk(dt)];
+    if(e&&e.s==="P")n++;else if(!(e&&e.s==="L"))break;
+    dt.setDate(dt.getDate()-1);
+  }
+  return n;
+}
+function renderAtt(){
+  const A=attMap(),td=dk(new Date());attFix(A);
+  if(aY===null){aY=Y;aM=M}
+  if(!aSel)aSel=td;
+  const sp=aSel.split("-").map(Number),e=A[aSel];
+  /* selected day panel */
+  $("att-d").textContent=(aSel===td?"இன்னைக்கு · ":"")+new Date(sp[0],sp[1]-1,sp[2]).toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const bg=$("att-bdg");bg.className="bdg "+(e?ATT[e.s][1]:"sn");bg.textContent=e?ATT[e.s][0]:"Mark பண்ணல";
+  [["P","att-p"],["A","att-a"],["L","att-l"]].forEach(([k,id])=>{$(id).className=(e&&e.s===k)?"on "+ATT[k][1]:""});
+  $("att-in").value=e&&e.t?e.t:"";$("att-out").value=e&&e.o?e.o:"";
+  $("att-hrs").textContent=e&&attDur(e)?"⏱ "+hmFmt(attDur(e)):"—";
+  const n=$("att-n");n.value=e&&e.n?e.n:"";n.disabled=!e;
+  const ok=(aSel===td);
+  $("att-clr").style.display=(e&&ok)?"":"none";
+  ["att-p","att-a","att-l","att-in","att-out","att-in-now","att-out-now"].forEach(id=>{$(id).disabled=!ok});
+  n.disabled=!e||!ok;
+  const lk=$("att-lock");
+  if(ok)lk.style.display="none";
+  else{lk.style.display="";lk.textContent=aSel>td?"🔒 இது வருங்கால நாள் – அந்த நாள் வரும்போது மட்டும் தான் attendance போட முடியும்.":"🔒 முடிஞ்ச நாள் – attendance-ஐ இனி மாத்த முடியாது (பார்க்க மட்டும்)."}
+  /* month */
+  const dim=new Date(aY,aM+1,0).getDate();
+  $("atitle").textContent=new Date(aY,aM,1).toLocaleString("en-IN",{month:"long",year:"numeric"});
+  $("apick").value=aY+"-"+String(aM+1).padStart(2,"0");
+  const c=$("att-cal");c.innerHTML="";
+  ["S","M","T","W","T","F","S"].forEach(h=>{const x=document.createElement("div");x.className="h";x.textContent=h;c.appendChild(x)});
+  for(let i=0;i<new Date(aY,aM,1).getDay();i++){const x=document.createElement("div");x.className="b";c.appendChild(x)}
+  let P=0,Ab=0,L=0,mins=0;
+  for(let d=1;d<=dim;d++){
+    const k=dk(new Date(aY,aM,d)),en=A[k];
+    if(en){if(en.s==="P"){P++;mins+=attDur(en)}else if(en.s==="A")Ab++;else L++}
+    const x=document.createElement("div");
+    x.className="d"+(en?" "+ATT[en.s][1]:"")+(k===td?" td":"")+(k===aSel?" sel":"");
+    x.textContent=d;if(en&&en.n)x.title=en.n;
+    x.onclick=()=>{aSel=k;renderAtt()};
+    c.appendChild(x);
+  }
+  const tot=P+Ab,pc=tot?Math.round(P/tot*100):0;
+  $("as-p").textContent=P;$("as-a").textContent=Ab;$("as-l").textContent=L;
+  $("as-pc").textContent=tot?pc+"%":"--";$("as-s").textContent=attStreak(A);$("as-h").textContent=hmFmt(mins);
+  $("as-bar").style.width=pc+"%";
+  $("as-txt").textContent=tot?P+" நாள் வந்திருக்கீங்க, "+Ab+" நாள் வரல (மொத்தம் "+tot+" நாள் mark பண்ணிருக்கீங்க)":"இந்த மாசம் இன்னும் attendance mark பண்ணல.";
+  /* register */
+  const tb=$("att-rows");tb.innerHTML="";
+  const cur=(aY===Y&&aM===M),past=(aY<Y||(aY===Y&&aM<M)),last=cur?TD:past?dim:0;
+  if(!last){const r=document.createElement("tr"),cell=document.createElement("td");cell.colSpan=7;cell.textContent="இந்த மாசம் இன்னும் வரல.";cell.style.color="var(--muted)";r.appendChild(cell);tb.appendChild(r)}
+  for(let d=last;d>=1;d--){
+    const dt=new Date(aY,aM,d),k=dk(dt),en=A[k],r=document.createElement("tr");
+    r.className=(dt.getDay()===0?"sun ":"")+(k===aSel?"selrow":"");
+    const cells=[d+" "+dt.toLocaleString("en-IN",{month:"short"}),dt.toLocaleDateString("en-IN",{weekday:"short"}),null,en&&en.s==="P"?t12(en.t):"—",en&&en.s==="P"?t12(en.o):"—",en&&attDur(en)?hmFmt(attDur(en)):"—",en&&en.n?en.n:""];
+    cells.forEach((v,i)=>{
+      const td2=document.createElement("td");
+      if(i===2){const b=document.createElement("span");b.className="bdg "+(en?ATT[en.s][1]:"sn");b.textContent=en?ATT[en.s][0]:"—";td2.appendChild(b)}
+      else td2.textContent=v;
+      r.appendChild(td2);
+    });
+    r.onclick=()=>{aSel=k;renderAtt();$("att-card").scrollIntoView({behavior:"smooth",block:"start"})};
+    tb.appendChild(r);
+  }
+}
+function attGo(dm){aM+=dm;if(aM<0){aM=11;aY--}if(aM>11){aM=0;aY++}renderAtt()}
+$("att-p").onclick=()=>attMark("P");
+$("att-a").onclick=()=>attMark("A");
+$("att-l").onclick=()=>attMark("L");
+$("att-in").onchange=()=>attTime("t",$("att-in").value);
+$("att-out").onchange=()=>attTime("o",$("att-out").value);
+$("att-in-now").onclick=()=>attTime("t",nowHM());
+$("att-out-now").onclick=()=>attTime("o",nowHM());
+$("att-n").addEventListener("input",()=>{if(!attOK())return;const e=attMap()[aSel];if(e){const v=$("att-n").value.trim();if(v)e.n=v;else delete e.n;save()}});
+$("att-clr").onclick=()=>{if(!attOK()){renderAtt();return}if(!confirm("இந்த நாளோட attendance-ஐ நீக்கணுமா?"))return;delete attMap()[aSel];save();renderAtt()};
+$("aprev").onclick=()=>attGo(-1);
+$("anext").onclick=()=>attGo(1);
+$("atoday").onclick=()=>{aY=Y;aM=M;aSel=dk(new Date());renderAtt()};
+$("apick").onchange=()=>{const v=$("apick").value;if(!v)return;const p=v.split("-");aY=+p[0];aM=+p[1]-1;renderAtt()};
+
+/* ----- Gym (daily reset) ----- */
+const GYM=[["walk","🚶 10,000 steps நடந்தேன்"],["water","💧 3 லிட்டர் தண்ணீர் குடிச்சேன்"],["food","🥗 Healthy food சாப்பிட்டேன்"],["junk","🍔 Junk food தவிர்த்தேன்"],["sugar","🍬 Sugar தவிர்த்தேன்"],["sleep","😴 7 மணி நேரம் தூங்கினேன்"]];
+function renderGym(){
+  const box=$("gym-list");box.innerHTML="";
+  GYM.forEach(([k,txt])=>{
+    const r=document.createElement("div");r.className="t-row";
+    const cb=document.createElement("input");cb.type="checkbox";cb.checked=!!S.daily.gym[k];
+    cb.onchange=()=>{cb.checked?S.daily.gym[k]=1:delete S.daily.gym[k];logGym();save();gSum();renderGTrack()};
+    const sp=document.createElement("span");sp.textContent=txt;
+    r.append(cb,sp);box.appendChild(r);
+  });gSum();
+}
+function gSum(){const n=GYM.filter(g=>S.daily.gym[g[0]]).length;
+  $("gym-sum").textContent=n+" / "+GYM.length+" இன்னைக்கு முடிஞ்சது"+(n===GYM.length?" 🔥 சூப்பர்!":"");
+  $("gym-bar").style.width=Math.round(n/GYM.length*100)+"%"}
+
+const CARE=[["b1","🪥 காலை Brush பண்ணேன்"],["bath","🚿 குளிச்சேன்"],["skin","🧴 Face wash & skin care"],["hair","💇 Hair / grooming"],["dress","👕 சுத்தமான உடை"],["b2","🌙 இரவு Brush பண்ணேன்"]];
+function renderCare(){
+  const box=$("care-list");box.innerHTML="";S.daily.care=S.daily.care||{};
+  CARE.forEach(([k,txt])=>{
+    const r=document.createElement("div");r.className="t-row";
+    const cb=document.createElement("input");cb.type="checkbox";cb.checked=!!S.daily.care[k];
+    cb.onchange=()=>{cb.checked?S.daily.care[k]=1:delete S.daily.care[k];logGym();save();cSum();renderGTrack()};
+    const sp=document.createElement("span");sp.textContent=txt;r.append(cb,sp);box.appendChild(r);
+  });cSum();
+}
+function cSum(){const n=CARE.filter(g=>S.daily.care[g[0]]).length;
+  $("care-sum").textContent=n+" / "+CARE.length+" இன்னைக்கு முடிஞ்சது"+(n===CARE.length?" ✨ சூப்பர்!":"");
+  $("care-bar").style.width=Math.round(n/CARE.length*100)+"%"}
+
+/* ----- Monthly / Weekly target sub-tabs ----- */
+function setTgtTab(t){
+  Q("#tgt-tabs .tab").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  ["m","w","r"].forEach(k=>{$("tgt-"+k).style.display=k===t?"":"none"});
+  if(t==="r")renderRank();
+}
+Q("#tgt-tabs .tab").forEach(b=>b.onclick=()=>setTgtTab(b.dataset.t));
+
+/* ----- Social media time tracker ----- */
+const SMI={instagram:"📸",youtube:"▶️",snapchat:"👻",whatsapp:"💬",facebook:"👍",twitter:"🐦",x:"🐦",telegram:"✈️",reddit:"👽",netflix:"🎬",tiktok:"🎵"};
+const smIcon=a=>SMI[a.toLowerCase()]||"📱";
+const smData=()=>{const d=S.sm||(S.sm={});if(!Array.isArray(d.apps)||!d.apps.length)d.apps=["Instagram","YouTube","Snapchat"];if(!Array.isArray(d.items))d.items=[];return d};
+const fmM=m=>m>=60?Math.floor(m/60)+"h "+String(m%60).padStart(2,"0")+"m":m+"m";
+let smY=null,smMo=null;
+function renderSocial(){
+  const D=smData(),td=dk(new Date());
+  if(smY===null){smY=Y;smMo=M}
+  if(!$("sm-d").value)$("sm-d").value=td;
+  const sel=$("sm-app"),pv=sel.value;sel.innerHTML="";
+  D.apps.forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=smIcon(a)+" "+a;sel.appendChild(o)});
+  if(pv&&D.apps.includes(pv))sel.value=pv;
+  const dim=new Date(smY,smMo+1,0).getDate(),cur=(smY===Y&&smMo===M),past=(smY<Y||(smY===Y&&smMo<M));
+  const el=cur?TD:past?dim:0,pre=smY+"-"+String(smMo+1).padStart(2,"0")+"-";
+  $("sm-title").textContent=new Date(smY,smMo,1).toLocaleString("en-IN",{month:"long",year:"numeric"});
+  const items=D.items.filter(x=>x.d.startsWith(pre)).sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:b.id-a.id);
+  const total=items.reduce((t,x)=>t+x.m,0),tdy=D.items.filter(x=>x.d===td).reduce((t,x)=>t+x.m,0);
+  const byDay={};items.forEach(x=>{byDay[x.d]=(byDay[x.d]||0)+x.m});
+  const lim=+D.limit||0;
+  $("sm-today").textContent=fmM(tdy);$("sm-month").textContent=fmM(total);
+  $("sm-avg").textContent=el?fmM(Math.round(total/el)):"0m";
+  let ok=0;if(lim)for(let d=1;d<=el;d++){const k=pre+String(d).padStart(2,"0");if((byDay[k]||0)<=lim)ok++}
+  $("sm-over").textContent=lim&&el?ok+"/"+el:"—";
+  $("sm-lim").value=lim||"";
+  const ls=$("sm-lsum"),lb=$("sm-lbar");
+  if(lim){
+    const pc=Math.min(100,Math.round(tdy/lim*100)),over=tdy>lim;
+    ls.textContent=over?"⚠️ இன்னைக்கு Limit "+fmM(tdy-lim)+" தாண்டிடுச்சு ("+fmM(tdy)+" / "+fmM(lim)+")":"இன்னைக்கு "+fmM(tdy)+" / "+fmM(lim)+" ("+pc+"%) · இன்னும் "+fmM(lim-tdy)+" மீதி";
+    lb.style.width=pc+"%";lb.style.background=over?"var(--bad)":"";
+  }else{ls.textContent="Daily Limit set பண்ணா, அதுக்குள்ள இருக்கீங்களான்னு தெரியும்.";lb.style.width="0%";lb.style.background=""}
+  /* per app */
+  const ab=$("sm-apps");ab.innerHTML="";
+  const byApp={};items.forEach(x=>{byApp[x.a]=(byApp[x.a]||0)+x.m});
+  const list=Object.keys(byApp).sort((a,b)=>byApp[b]-byApp[a]);
+  if(!list.length){const e=document.createElement("div");e.className="info";e.textContent="இந்த மாசம் இன்னும் எதுவும் note பண்ணல.";ab.appendChild(e)}
+  list.forEach(a=>{
+    const r=document.createElement("div");r.style.marginBottom="10px";
+    const top=document.createElement("div");top.style.cssText="display:flex;justify-content:space-between;font-weight:600;font-size:14px;gap:8px";
+    const x=document.createElement("span"),y=document.createElement("span");
+    x.textContent=smIcon(a)+" "+a;y.textContent=fmM(byApp[a])+" · "+Math.round(byApp[a]/total*100)+"%";y.style.whiteSpace="nowrap";top.append(x,y);
+    const br=document.createElement("div");br.className="bar lt";br.style.margin="4px 0 0";
+    const fl=document.createElement("div");fl.style.width=Math.round(byApp[a]/total*100)+"%";br.appendChild(fl);
+    r.append(top,br);ab.appendChild(r);
+  });
+  /* per day */
+  const db=$("sm-days");db.innerHTML="";
+  const mx=Math.max(1,lim,...Object.values(byDay));
+  if(!el){const e=document.createElement("div");e.className="info";e.textContent="இந்த மாசம் இன்னும் தொடங்கல.";db.appendChild(e)}
+  for(let d=el;d>=1;d--){
+    const k=pre+String(d).padStart(2,"0"),m=byDay[k]||0,r=document.createElement("div");r.style.marginBottom="8px";
+    const top=document.createElement("div");top.style.cssText="display:flex;justify-content:space-between;font-size:13px;font-weight:600";
+    const x=document.createElement("span"),y=document.createElement("span");
+    x.textContent=d+" "+new Date(smY,smMo,d).toLocaleDateString("en-IN",{weekday:"short"});
+    y.textContent=m?fmM(m):"—";if(lim&&m>lim)y.style.color="var(--bad)";top.append(x,y);
+    const br=document.createElement("div");br.className="bar lt";br.style.margin="3px 0 0";
+    const fl=document.createElement("div");fl.style.width=Math.round(m/mx*100)+"%";if(lim&&m>lim)fl.style.background="var(--bad)";br.appendChild(fl);
+    r.append(top,br);db.appendChild(r);
+  }
+  /* rows */
+  const tb=$("sm-rows");tb.innerHTML="";
+  if(!items.length){const r=document.createElement("tr"),c=document.createElement("td");c.colSpan=4;c.style.cssText="padding:8px;color:var(--muted)";c.textContent="Entries இல்ல.";r.appendChild(c);tb.appendChild(r)}
+  items.forEach(x=>{
+    const r=document.createElement("tr");r.style.borderTop="1px solid var(--line)";
+    const sp=x.d.split("-");
+    [+sp[2]+" "+new Date(+sp[0],sp[1]-1,1).toLocaleString("en-IN",{month:"short"}),smIcon(x.a)+" "+x.a,fmM(x.m)].forEach((v,i)=>{const c=document.createElement("td");c.style.padding="7px 6px";c.textContent=v;if(i===2){c.style.textAlign="right";c.style.fontWeight="700"}r.appendChild(c)});
+    const dc=document.createElement("td"),b=document.createElement("button");
+    b.type="button";b.textContent="🗑️";b.title="நீக்கு";b.style.cssText="background:none;border:0;cursor:pointer;font-size:16px";
+    b.onclick=()=>{if(!confirm("இந்த entry-ஐ நீக்கணுமா?"))return;D.items=D.items.filter(y=>y.id!==x.id);save();renderSocial()};
+    dc.appendChild(b);r.appendChild(dc);tb.appendChild(r);
+  });
+}
+$("sm-add").onclick=()=>{
+  const d=$("sm-d").value,a=$("sm-app").value,h=parseInt($("sm-h").value)||0,mi=parseInt($("sm-m").value)||0,m=h*60+mi;
+  if(!d){alert("Date போடுங்க.");return}
+  if(!a){alert("App select பண்ணுங்க.");return}
+  if(!(m>0)){alert("மணி / நிமிடம் போடுங்க.");return}
+  smData().items.push({id:Date.now(),d,a,m});
+  save();$("sm-h").value="";$("sm-m").value="";
+  const p=d.split("-");smY=+p[0];smMo=+p[1]-1;
+  renderSocial();toast("📱 நேரம் add ஆச்சு ✓");
+};
+["sm-h","sm-m"].forEach(id=>$(id).addEventListener("keydown",e=>{if(e.key==="Enter")$("sm-add").click()}));
+$("sm-newadd").onclick=()=>{
+  const n=$("sm-new").value.trim();if(!n)return;
+  const D=smData();
+  if(!D.apps.some(a=>a.toLowerCase()===n.toLowerCase()))D.apps.push(n);
+  $("sm-new").value="";save();renderSocial();$("sm-app").value=D.apps.find(a=>a.toLowerCase()===n.toLowerCase());
+};
+$("sm-new").addEventListener("keydown",e=>{if(e.key==="Enter")$("sm-newadd").click()});
+$("sm-lset").onclick=()=>{const v=parseInt($("sm-lim").value),D=smData();if(v>0)D.limit=v;else delete D.limit;save();renderSocial()};
+function smGo(dm){smMo+=dm;if(smMo<0){smMo=11;smY--}if(smMo>11){smMo=0;smY++}renderSocial()}
+$("sm-prev").onclick=()=>smGo(-1);
+$("sm-next").onclick=()=>smGo(1);
+
+/* ----- Attendance sub-tabs ----- */
+function setAttTab(t){
+  Q("#att-tabs .tab").forEach(b=>b.classList.toggle("on",b.dataset.a===t));
+  ["a","p"].forEach(k=>{$("att-sub-"+k).style.display=k===t?"":"none"});
+  if(t==="p")markNow(new Date().getHours());
+}
+Q("#att-tabs .tab").forEach(b=>b.onclick=()=>setAttTab(b.dataset.a));
+
+/* ----- Gym sub-tabs ----- */
+function setGymTab(t){
+  Q("#gym-tabs .tab").forEach(b=>b.classList.toggle("on",b.dataset.g===t));
+  ["g","b","h","s"].forEach(k=>{$("gsub-"+k).style.display=k===t?"":"none"});
+  if(t==="g")renderGTrack();
+  if(t==="s")renderSocial();
+}
+Q("#gym-tabs .tab").forEach(b=>b.onclick=()=>setGymTab(b.dataset.g));
+
+/* ----- Gym & Health monthly consistency ----- */
+const glog=()=>S.glog||(S.glog={});
+function logGym(){
+  const k=dk(new Date()),g=Object.assign({},S.daily.gym||{}),c=Object.assign({},S.daily.care||{});
+  if(Object.keys(g).length||Object.keys(c).length)glog()[k]={g,c};else delete glog()[k];
+}
+const gtScore=k=>{const e=glog()[k];if(!e)return 0;
+  const n=GYM.filter(x=>e.g&&e.g[x[0]]).length+CARE.filter(x=>e.c&&e.c[x[0]]).length;
+  return n/(GYM.length+CARE.length)*100};
+let gtY=null,gtM=null;
+function renderGTrack(){
+  if(!$("gt-cal"))return;
+  if(gtY===null){gtY=Y;gtM=M}
+  const dim=new Date(gtY,gtM+1,0).getDate(),cur=(gtY===Y&&gtM===M),past=(gtY<Y||(gtY===Y&&gtM<M));
+  const el=cur?TD:past?dim:0,L=glog();
+  $("gt-title").textContent=new Date(gtY,gtM,1).toLocaleString("en-IN",{month:"long",year:"numeric"});
+  const c=$("gt-cal");c.innerHTML="";
+  ["S","M","T","W","T","F","S"].forEach(h=>{const x=document.createElement("div");x.className="h";x.textContent=h;c.appendChild(x)});
+  for(let i=0;i<new Date(gtY,gtM,1).getDay();i++){const x=document.createElement("div");x.className="b";c.appendChild(x)}
+  let sum=0,good=0,full=0,run=0,best=0,streak=0;
+  const total=GYM.length+CARE.length;
+  for(let d=1;d<=dim;d++){
+    const k=dk(new Date(gtY,gtM,d)),pc=gtScore(k),x=document.createElement("div");
+    x.className="d"+(cur&&d===TD?" td":"");x.textContent=d;x.style.cursor="default";
+    if(d<=el){
+      sum+=pc;
+      if(pc>=80){good++;run++;if(run>best)best=run}else run=0;
+      if(pc>=99.9)full++;
+      const n=Math.round(pc/100*total);
+      if(pc>=80){x.style.background="var(--ok)";x.style.color="#fff"}
+      else if(pc>=50){x.style.background="#f0a63a";x.style.color="#fff"}
+      else if(pc>0){x.style.background="var(--bad)";x.style.color="#fff"}
+      x.title=d+" – "+n+"/"+total+" ("+Math.round(pc)+"%)";
+    }else{x.style.opacity=".45"}
+    c.appendChild(x);
+  }
+  /* current streak: consecutive good days ending today (or yesterday if today not yet good) */
+  if(cur){
+    let d=TD;if(gtScore(dk(new Date(gtY,gtM,d)))<80)d--;
+    while(d>=1&&gtScore(dk(new Date(gtY,gtM,d)))>=80){streak++;d--}
+  }
+  const avg=el?Math.round(sum/el):0;
+  $("gt-pc").textContent=el?avg+"%":"--";
+  $("gt-good").textContent=good;$("gt-full").textContent=full;$("gt-str").textContent=streak;$("gt-best").textContent=best;
+  $("gt-bar").style.width=avg+"%";
+  $("gt-txt").textContent=el?el+" நாள்ல "+good+" நாள் 80%+ முடிச்சிருக்கீங்க"+(avg>=80?" 🔥 சூப்பர் consistency!":avg>=50?" 💪 நல்லா போகுது, இன்னும் கொஞ்சம்!":" ⚠️ இன்னும் consistent ஆகணும்"):"இந்த மாசம் இன்னும் தொடங்கல.";
+  /* per-habit */
+  const box=$("gt-items");box.innerHTML="";
+  const rowsFor=(arr,key)=>arr.forEach(([id,txt])=>{
+    let n=0;for(let d=1;d<=el;d++){const e=L[dk(new Date(gtY,gtM,d))];if(e&&e[key]&&e[key][id])n++}
+    const pc=el?Math.round(n/el*100):0;
+    const r=document.createElement("div");r.style.marginBottom="10px";
+    const top=document.createElement("div");top.style.cssText="display:flex;justify-content:space-between;font-weight:600;font-size:14px;gap:8px";
+    const a=document.createElement("span"),b=document.createElement("span");a.textContent=txt;b.textContent=n+"/"+el+" நாள் · "+pc+"%";b.style.whiteSpace="nowrap";top.append(a,b);
+    const br=document.createElement("div");br.className="bar lt";br.style.margin="4px 0 0";
+    const fl=document.createElement("div");fl.style.width=pc+"%";br.appendChild(fl);
+    r.append(top,br);box.appendChild(r);
+  });
+  rowsFor(GYM,"g");rowsFor(CARE,"c");
+}
+function gtGo(dm){gtM+=dm;if(gtM<0){gtM=11;gtY--}if(gtM>11){gtM=0;gtY++}renderGTrack()}
+$("gt-prev").onclick=()=>gtGo(-1);
+$("gt-next").onclick=()=>gtGo(1);
+
+/* ----- Bucket List & Goals (permanent, user-added) ----- */
+const bkList=()=>S.bucket||(S.bucket=[]);
+function renderBucket(){
+  const L=bkList();
+  [["bucket","bk-list-bucket","இன்னும் எதுவும் add பண்ணல."],["goal","bk-list-goal","இன்னும் Goal எதுவும் இல்ல."]].forEach(([ty,id,empty])=>{
+    const box=$(id);box.innerHTML="";
+    const items=L.filter(x=>x.type===ty);
+    if(!items.length){const e=document.createElement("div");e.style.cssText="color:var(--muted);font-size:14px";e.textContent=empty;box.appendChild(e)}
+    items.forEach(x=>{
+      const r=document.createElement("div");r.className="t-row";
+      const cb=document.createElement("input");cb.type="checkbox";cb.checked=!!x.d;
+      cb.onchange=()=>{x.d=cb.checked;save();renderBucket()};
+      const sp=document.createElement("span");sp.textContent=x.t;sp.style.flex="1";
+      if(x.d)sp.style.cssText+=";text-decoration:line-through;opacity:.7";
+      const del=document.createElement("button");del.type="button";del.textContent="🗑️";del.title="நீக்கு";
+      del.style.cssText="background:none;border:0;cursor:pointer;font-size:16px";
+      del.onclick=()=>{if(!confirm("இதை நீக்கணுமா?"))return;S.bucket=bkList().filter(y=>y.id!==x.id);save();renderBucket()};
+      r.append(cb,sp,del);box.appendChild(r);
+    });
+  });
+  const n=L.filter(x=>x.d).length;
+  $("bk-sum").textContent=L.length?n+" / "+L.length+" முடிஞ்சது"+(n===L.length?" 🎉 சூப்பர்!":""):"இன்னும் எதுவும் add பண்ணல – கீழ add பண்ணு.";
+  $("bk-bar").style.width=(L.length?Math.round(n/L.length*100):0)+"%";
+}
+$("bk-add").onclick=()=>{
+  const t=$("bk-in").value.trim();if(!t)return;
+  bkList().push({id:Date.now(),type:$("bk-type").value,t,d:false});
+  $("bk-in").value="";save();renderBucket();
+};
+$("bk-in").addEventListener("keydown",e=>{if(e.key==="Enter")$("bk-add").click()});
+
+/* ----- Habits / Best Qualities (permanent, user-added) ----- */
+const hbList=()=>S.habits||(S.habits=[]);
+function renderHabits(){
+  const L=hbList(),box=$("hb-list");box.innerHTML="";
+  $("hb-sum").textContent=L.length?"⭐ "+L.length+" best qualities":"இன்னும் எதுவும் add பண்ணல – கீழ add பண்ணு.";
+  L.forEach(x=>{
+    const r=document.createElement("div");r.className="t-row";
+    const st=document.createElement("span");st.textContent="⭐";st.style.flex="0 0 auto";
+    const sp=document.createElement("span");sp.textContent=x.t;sp.style.flex="1";
+    const del=document.createElement("button");del.type="button";del.textContent="🗑️";del.title="நீக்கு";
+    del.style.cssText="background:none;border:0;cursor:pointer;font-size:16px";
+    del.onclick=()=>{if(!confirm("இதை நீக்கணுமா?"))return;S.habits=hbList().filter(y=>y.id!==x.id);save();renderHabits()};
+    r.append(st,sp,del);box.appendChild(r);
+  });
+}
+$("hb-add").onclick=()=>{
+  const t=$("hb-in").value.trim();if(!t)return;
+  hbList().push({id:Date.now(),t});
+  $("hb-in").value="";save();renderHabits();
+};
+$("hb-in").addEventListener("keydown",e=>{if(e.key==="Enter")$("hb-add").click()});
+
+/* ----- Finance (expenses) ----- */
+const FCAT=[["food","🍔 Food"],["travel","🚌 Travel / Petrol"],["study","📚 Study / Books"],["health","💪 Gym / Health"],["bills","📱 Recharge / Bills"],["shop","🛍️ Shopping"],["fun","🎬 Entertainment"],["other","📦 Others"]];
+let fY=null,fM=null;
+const finData=()=>{const f=S.fin||(S.fin={});if(!Array.isArray(f.items))f.items=[];if(!f.budget)f.budget={};if(!Array.isArray(f.sav))f.sav=[];return f};
+const rs=n=>"₹"+(Math.round(n*100)/100).toLocaleString("en-IN");
+const fmk=(y,m)=>y+"-"+String(m+1).padStart(2,"0");
+(function(){const sel=$("fin-c");FCAT.forEach(([k,t])=>{const o=document.createElement("option");o.value=k;o.textContent=t;sel.appendChild(o)})})();
+function renderFin(){
+  renderSav();
+  const F=finData(),td=dk(new Date());
+  if(fY===null){fY=Y;fM=M}
+  if(!$("fin-d").value)$("fin-d").value=td;
+  const mk=fmk(fY,fM),pre=mk+"-";
+  $("fin-title").textContent=new Date(fY,fM,1).toLocaleString("en-IN",{month:"long",year:"numeric"});
+  const items=F.items.filter(x=>x.d.startsWith(pre)).sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:b.id-a.id);
+  const tot=items.reduce((t,x)=>t+x.a,0),tdy=F.items.filter(x=>x.d===td).reduce((t,x)=>t+x.a,0);
+  $("fin-tot").textContent=rs(tot);$("fin-today").textContent=rs(tdy);$("fin-cnt").textContent=items.length;
+  /* budget */
+  const bud=+F.budget[mk]||0;
+  $("fin-bud").value=bud||"";
+  const left=$("fin-left"),bar=$("fin-bbar"),bs=$("fin-bsum");
+  if(bud){
+    const rem=bud-tot,pc=Math.min(100,Math.round(tot/bud*100));
+    left.textContent=rs(rem);left.style.color=rem<0?"var(--bad)":"";
+    bar.style.width=pc+"%";bar.style.background=rem<0?"var(--bad)":"";
+    bs.textContent=rem<0?"⚠️ Budget "+rs(-rem)+" தாண்டிடுச்சு ("+rs(tot)+" / "+rs(bud)+")":rs(tot)+" / "+rs(bud)+" செலவு ("+pc+"%)";
+  }else{left.textContent="—";left.style.color="";bar.style.width="0%";bs.textContent="Monthly Budget set பண்ணா மீதி எவ்ளோன்னு தெரியும்.";}
+  /* categories */
+  const cb=$("fin-cats");cb.innerHTML="";
+  const sums={};items.forEach(x=>{sums[x.c]=(sums[x.c]||0)+x.a});
+  const list=FCAT.filter(([k])=>sums[k]).sort((a,b)=>sums[b[0]]-sums[a[0]]);
+  if(!list.length){const e=document.createElement("div");e.className="info";e.textContent="இந்த மாசம் இன்னும் செலவு எதுவும் note பண்ணல.";cb.appendChild(e)}
+  list.forEach(([k,t])=>{
+    const r=document.createElement("div");r.style.marginBottom="10px";
+    const top=document.createElement("div");top.style.cssText="display:flex;justify-content:space-between;font-weight:600;font-size:14px";
+    const a=document.createElement("span"),b=document.createElement("span");
+    a.textContent=t;b.textContent=rs(sums[k])+" · "+Math.round(sums[k]/tot*100)+"%";top.append(a,b);
+    const br=document.createElement("div");br.className="bar lt";br.style.margin="4px 0 0";
+    const fl=document.createElement("div");fl.style.width=Math.round(sums[k]/tot*100)+"%";br.appendChild(fl);
+    r.append(top,br);cb.appendChild(r);
+  });
+  /* rows */
+  const tb=$("fin-rows");tb.innerHTML="";
+  if(!items.length){const r=document.createElement("tr"),c=document.createElement("td");c.colSpan=5;c.style.cssText="padding:8px;color:var(--muted)";c.textContent="Entries இல்ல.";r.appendChild(c);tb.appendChild(r)}
+  items.forEach(x=>{
+    const r=document.createElement("tr");r.style.borderTop="1px solid var(--line)";
+    const sp=x.d.split("-"),cat=(FCAT.find(c=>c[0]===x.c)||FCAT[7])[1];
+    const vals=[+sp[2]+" "+new Date(+sp[0],sp[1]-1,1).toLocaleString("en-IN",{month:"short"}),cat,x.n||"",rs(x.a)];
+    vals.forEach((v,i)=>{const c=document.createElement("td");c.style.padding="7px 6px";c.textContent=v;if(i===3){c.style.textAlign="right";c.style.fontWeight="700"}r.appendChild(c)});
+    const dc=document.createElement("td"),db=document.createElement("button");
+    db.type="button";db.textContent="🗑️";db.title="நீக்கு";db.style.cssText="background:none;border:0;cursor:pointer;font-size:16px";
+    db.onclick=()=>{if(!confirm("இந்த செலவை நீக்கணுமா?"))return;F.items=F.items.filter(y=>y.id!==x.id);save();renderFin()};
+    dc.appendChild(db);r.appendChild(dc);tb.appendChild(r);
+  });
+}
+$("fin-add").onclick=()=>{
+  const d=$("fin-d").value,c=$("fin-c").value,a=parseFloat($("fin-a").value),n=$("fin-n").value.trim();
+  if(!d){alert("Date போடுங்க.");return}
+  if(!(a>0)){alert("சரியான தொகை போடுங்க.");return}
+  finData().items.push({id:Date.now(),d,c,a,n});
+  save();$("fin-a").value="";$("fin-n").value="";
+  const p=d.split("-");fY=+p[0];fM=+p[1]-1;
+  renderFin();toast("💰 செலவு add ஆச்சு ✓");
+};
+$("fin-n").addEventListener("keydown",e=>{if(e.key==="Enter")$("fin-add").click()});
+$("fin-a").addEventListener("keydown",e=>{if(e.key==="Enter")$("fin-add").click()});
+$("fin-bset").onclick=()=>{
+  const v=parseFloat($("fin-bud").value),F=finData(),mk=fmk(fY,fM);
+  if(v>0)F.budget[mk]=v;else delete F.budget[mk];
+  save();renderFin();
+};
+function finGo(dm){fM+=dm;if(fM<0){fM=11;fY--}if(fM>11){fM=0;fY++}renderFin()}
+$("fin-prev").onclick=()=>finGo(-1);
+$("fin-next").onclick=()=>finGo(1);
+
+/* ----- Savings (inside Finance) ----- */
+let finTab="exp";
+function setFinTab(t){
+  finTab=t;
+  Q("#fin-tabs .tab").forEach(b=>b.classList.toggle("on",b.dataset.f===t));
+  $("fin-exp").style.display=t==="exp"?"":"none";
+  $("fin-sav").style.display=t==="sav"?"":"none";
+}
+Q("#fin-tabs .tab").forEach(b=>b.onclick=()=>setFinTab(b.dataset.f));
+const svNet=x=>x.t==="out"?-x.a:x.a;
+function renderSav(){
+  const F=finData(),td=dk(new Date());
+  if(fY===null){fY=Y;fM=M}
+  if(!$("sv-d").value)$("sv-d").value=td;
+  const pre=fmk(fY,fM)+"-";
+  $("sv-title").textContent=new Date(fY,fM,1).toLocaleString("en-IN",{month:"long",year:"numeric"});
+  const bal=F.sav.reduce((t,x)=>t+svNet(x),0);
+  const items=F.sav.filter(x=>x.d.startsWith(pre)).sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:b.id-a.id);
+  const inn=items.filter(x=>x.t!=="out").reduce((t,x)=>t+x.a,0),out=items.filter(x=>x.t==="out").reduce((t,x)=>t+x.a,0);
+  $("sv-bal").textContent=rs(bal);$("sv-net").textContent=rs(inn-out);$("sv-in").textContent=rs(inn);$("sv-out").textContent=rs(out);
+  /* goal */
+  const g=F.sgoal;
+  if(g&&g.amt>0){
+    const pc=Math.max(0,Math.min(100,Math.round(bal/g.amt*100)));
+    $("sv-gsum").textContent=(g.name?g.name+": ":"")+rs(bal)+" / "+rs(g.amt)+" ("+pc+"%)"+(bal>=g.amt?" 🎉 Goal முடிஞ்சது!":" · இன்னும் "+rs(g.amt-bal)+" வேணும்");
+    $("sv-gbar").style.width=pc+"%";
+    if(document.activeElement!==$("sv-gn"))$("sv-gn").value=g.name||"";
+    if(document.activeElement!==$("sv-ga"))$("sv-ga").value=g.amt;
+  }else{$("sv-gsum").textContent="Savings Goal set பண்ணா எவ்ளோ சேர்ந்திருக்குன்னு தெரியும்.";$("sv-gbar").style.width="0%"}
+  /* month-wise */
+  const mb=$("sv-months");mb.innerHTML="";
+  const byM={};F.sav.forEach(x=>{const k=x.d.slice(0,7);byM[k]=(byM[k]||0)+svNet(x)});
+  const keys=Object.keys(byM).sort().reverse().slice(0,12);
+  if(!keys.length){const e=document.createElement("div");e.className="info";e.textContent="இன்னும் Savings எதுவும் add பண்ணல.";mb.appendChild(e)}
+  const mx=Math.max(1,...keys.map(k=>Math.abs(byM[k])));
+  keys.forEach(k=>{
+    const sp=k.split("-"),r=document.createElement("div");r.style.marginBottom="10px";
+    const top=document.createElement("div");top.style.cssText="display:flex;justify-content:space-between;font-weight:600;font-size:14px";
+    const a=document.createElement("span"),b=document.createElement("span");
+    a.textContent=new Date(+sp[0],sp[1]-1,1).toLocaleString("en-IN",{month:"long",year:"numeric"});
+    b.textContent=(byM[k]<0?"-":"")+rs(Math.abs(byM[k]));if(byM[k]<0)b.style.color="var(--bad)";top.append(a,b);
+    const br=document.createElement("div");br.className="bar lt";br.style.margin="4px 0 0";
+    const fl=document.createElement("div");fl.style.width=Math.round(Math.abs(byM[k])/mx*100)+"%";if(byM[k]<0)fl.style.background="var(--bad)";br.appendChild(fl);
+    r.append(top,br);mb.appendChild(r);
+  });
+  /* rows */
+  const tb=$("sv-rows");tb.innerHTML="";
+  if(!items.length){const r=document.createElement("tr"),c=document.createElement("td");c.colSpan=5;c.style.cssText="padding:8px;color:var(--muted)";c.textContent="Entries இல்ல.";r.appendChild(c);tb.appendChild(r)}
+  items.forEach(x=>{
+    const r=document.createElement("tr");r.style.borderTop="1px solid var(--line)";
+    const sp=x.d.split("-");
+    const vals=[+sp[2]+" "+new Date(+sp[0],sp[1]-1,1).toLocaleString("en-IN",{month:"short"}),x.t==="out"?"➖ Withdraw":"➕ Save",x.n||"",(x.t==="out"?"-":"+")+rs(x.a)];
+    vals.forEach((v,i)=>{const c=document.createElement("td");c.style.padding="7px 6px";c.textContent=v;if(i===3){c.style.textAlign="right";c.style.fontWeight="700";c.style.color=x.t==="out"?"var(--bad)":"var(--ok)"}r.appendChild(c)});
+    const dc=document.createElement("td"),db=document.createElement("button");
+    db.type="button";db.textContent="🗑️";db.title="நீக்கு";db.style.cssText="background:none;border:0;cursor:pointer;font-size:16px";
+    db.onclick=()=>{if(!confirm("இந்த entry-ஐ நீக்கணுமா?"))return;F.sav=F.sav.filter(y=>y.id!==x.id);save();renderFin()};
+    dc.appendChild(db);r.appendChild(dc);tb.appendChild(r);
+  });
+}
+$("sv-add").onclick=()=>{
+  const d=$("sv-d").value,t=$("sv-t").value,a=parseFloat($("sv-a").value),n=$("sv-n").value.trim(),F=finData();
+  if(!d){alert("Date போடுங்க.");return}
+  if(!(a>0)){alert("சரியான தொகை போடுங்க.");return}
+  if(t==="out"){const bal=F.sav.reduce((x,y)=>x+svNet(y),0);if(a>bal){alert("Savings-ல "+rs(bal)+" தான் இருக்கு. அதுக்கு மேல Withdraw பண்ண முடியாது.");return}}
+  F.sav.push({id:Date.now(),d,t,a,n});
+  save();$("sv-a").value="";$("sv-n").value="";
+  const p=d.split("-");fY=+p[0];fM=+p[1]-1;
+  renderFin();toast(t==="out"?"➖ Withdraw note ஆச்சு ✓":"🏦 Savings add ஆச்சு ✓");
+};
+$("sv-n").addEventListener("keydown",e=>{if(e.key==="Enter")$("sv-add").click()});
+$("sv-a").addEventListener("keydown",e=>{if(e.key==="Enter")$("sv-add").click()});
+$("sv-gset").onclick=()=>{
+  const F=finData(),a=parseFloat($("sv-ga").value),n=$("sv-gn").value.trim();
+  if(a>0)F.sgoal={name:n,amt:a};else{delete F.sgoal;$("sv-gn").value="";$("sv-ga").value=""}
+  save();renderFin();
+};
+$("sv-prev").onclick=()=>finGo(-1);
+$("sv-next").onclick=()=>finGo(1);
+
+/* ----- Thirukkural (தினமும் ஒன்னு மாறும்) ----- */
+const KURAL=[
+[1,"அகர முதல எழுத்தெல்லாம் ஆதி","பகவன் முதற்றே உலகு.","எழுத்துக்கு 'அ' முதல்; அதுபோல உலகுக்கு இறைவன் முதல்."],
+[2,"கற்றதனால் ஆய பயனென்கொல் வாலறிவன்","நற்றாள் தொழாஅர் எனின்.","இறைவனை வணங்காவிட்டால் கற்ற கல்வியால் என்ன பயன்?"],
+[20,"நீரின்றி அமையாது உலகெனின் யார்யார்க்கும்","வானின்றி அமையாது ஒழுக்கு.","நீர் இல்லாமல் உலகம் இல்லை; மழை இல்லாமல் ஒழுக்கம் இல்லை."],
+[31,"சிறப்பீனுஞ் செல்வமும் ஈனும் அறத்தினூஉங்கு","ஆக்கம் எவனோ உயிர்க்கு.","அறம் சிறப்பையும் செல்வத்தையும் தரும்; அதைவிட நன்மை எது?"],
+[33,"ஒல்லும் வகையான் அறவினை ஓவாதே","செல்லும்வாய் எல்லாஞ் செயல்.","முடிந்த வழியிலெல்லாம் இடைவிடாமல் அறம் செய்க."],
+[34,"மனத்துக்கண் மாசிலன் ஆதல் அனைத்தறன்","ஆகுல நீர பிற.","மனத்தூய்மையே அறம்; மற்றவை ஆரவாரம்."],
+[36,"அன்றறிவாம் என்னாது அறஞ்செய்க மற்றது","பொன்றுங்கால் பொன்றாத் துணை.","பிறகு செய்யலாம் என்னாமல் இப்போதே அறம் செய்; அதுவே இறுதியில் துணை."],
+[38,"வீழ்நாள் படாஅமை நன்றாற்றின் அஃதொருவன்","வாழ்நாள் வழியடைக்குங் கல்.","நாளை வீணாக்காமல் நன்மை செய்; அது வாழ்நாளின் வழியை அடைக்கும் கல்லாகும்."],
+[40,"செயற்பால தோரும் அறனே ஒருவற்கு","உயற்பால தோரும் புகழ்.","செய்யத்தக்கது அறமே; பெறத்தக்கது புகழே."],
+[45,"அன்பும் அறனும் உடைத்தாயின் இல்வாழ்க்கை","பண்பும் பயனும் அது.","அன்பும் அறமும் இருந்தால் வாழ்க்கையே பண்பும் பயனும் ஆகும்."],
+[50,"வையத்துள் வாழ்வாங்கு வாழ்பவன் வானுறையும்","தெய்வத்துள் வைக்கப் படும்.","உலகில் நெறியோடு வாழ்பவன் தெய்வத்துக்கு நிகராக மதிக்கப்படுவான்."],
+[66,"குழலினிது யாழினிது என்பதம் மக்கள்","மழலைச்சொல் கேளா தவர்.","தன் குழந்தையின் மழலை கேட்காதவரே குழலும் யாழும் இனிது என்பர்."],
+[67,"தந்தை மகற்காற்றும் நன்றி அவையத்து","முந்தி இருப்பச் செயல்.","மகனை அவையில் முதன்மையாக்குவதே தந்தை செய்யும் நன்மை."],
+[71,"அன்பிற்கும் உண்டோ அடைக்குந்தாழ் ஆர்வலர்","புன்கண்நீர் பூசல் தரும்.","அன்பை மறைக்க முடியாது; கண்ணீரே காட்டிக்கொடுத்துவிடும்."],
+[100,"இனிய உளவாக இன்னாத கூறல்","கனியிருப்பக் காய்கவர்ந் தற்று.","இனிய சொல் இருக்க கடுஞ்சொல் பேசுவது, கனி இருக்க காய் உண்பது போல."],
+[104,"தினைத்துணை நன்றி செயினும் பனைத்துணையாக்","கொள்வர் பயன்தெரி வார்.","தினையளவு உதவியையும் பனையளவாகப் போற்றுவர் பயன் அறிந்தவர்."],
+[108,"நன்றி மறப்பது நன்றன்று நன்றல்லது","அன்றே மறப்பது நன்று.","உதவியை மறக்கக் கூடாது; தீமையை அன்றே மறப்பது நல்லது."],
+[110,"எந்நன்றி கொன்றார்க்கும் உய்வுண்டாம் உய்வில்லை","செய்ந்நன்றி கொன்ற மகற்கு.","எந்த நன்மையை அழித்தவனும் தப்பலாம்; நன்றி மறந்தவன் தப்ப முடியாது."],
+[121,"அடக்கம் அமரருள் உய்க்கும் அடங்காமை","ஆரிருள் உய்த்து விடும்.","அடக்கம் உயர்வுக்கும், அடங்காமை இருளுக்கும் கொண்டு செல்லும்."],
+[127,"யாகாவா ராயினும் நாகாக்க காவாக்கால்","சோகாப்பர் சொல்லிழுக்குப் பட்டு.","எதைக் காக்காவிட்டாலும் நாவைக் காக்க; இல்லையேல் சொல்லால் துன்பம்."],
+[129,"தீயினாற் சுட்டபுண் உள்ளாறும் ஆறாதே","நாவினாற் சுட்ட வடு.","தீயால் சுட்ட புண் ஆறும்; சொல்லால் சுட்ட வடு ஆறாது."],
+[131,"ஒழுக்கம் விழுப்பந் தரலான் ஒழுக்கம்","உயிரினும் ஓம்பப் படும்.","ஒழுக்கம் சிறப்பைத் தருவதால் உயிரினும் மேலாகக் காக்கப்படும்."],
+[151,"அகழ்வாரைத் தாங்கும் நிலம்போலத் தம்மை","இகழ்வார்ப் பொறுத்தல் தலை.","தோண்டுபவரையும் தாங்கும் நிலம்போல், இகழ்வாரைப் பொறுப்பது சிறந்தது."],
+[211,"கைம்மாறு வேண்டா கடப்பாடு மாரிமாட்டு","என்றாற்றும் கொல்லோ உலகு.","மழை பதில் எதிர்பார்ப்பதில்லை; உதவியும் அப்படியே."],
+[221,"வறியார்க்கொன் றீவதே ஈகைமற் றெல்லாம்","குறியெதிர்ப்பை நீரது உடைத்து.","ஏழைக்குக் கொடுப்பதே உண்மையான ஈகை; மற்றவை பதிலை எதிர்பார்ப்பவை."],
+[314,"இன்னா செய்தாரை ஒறுத்தல் அவர்நாண","நன்னயஞ் செய்து விடல்.","தீமை செய்தவரை, அவர் நாணும்படி நன்மை செய்து தண்டி."],
+[322,"பகுத்துண்டு பல்லுயிர் ஓம்புதல் நூலோர்","தொகுத்தவற்றுள் எல்லாம் தலை.","பகிர்ந்துண்டு உயிர்களைக் காப்பதே அறநூல்களின் தலைசிறந்த அறம்."],
+[391,"கற்க கசடறக் கற்பவை கற்றபின்","நிற்க அதற்குத் தக.","குற்றமில்லாமல் கற்க; கற்றபின் அதன்படி நட."],
+[392,"எண்ணென்ப ஏனை எழுத்தென்ப இவ்விரண்டும்","கண்ணென்ப வாழும் உயிர்க்கு.","எண்ணும் எழுத்தும் மனிதருக்குக் கண்கள் போன்றவை."],
+[396,"தொட்டனைத் தூறும் மணற்கேணி மாந்தர்க்குக்","கற்றனைத் தூறும் அறிவு.","மணல் கேணியில் தோண்டத் தோண்ட நீர்; கற்கக் கற்க அறிவு."],
+[397,"யாதானும் நாடாமால் ஊராமால் என்னொருவன்","சாந்துணையுங் கல்லாத வாறு.","எல்லா ஊரும் நம் ஊரே; சாகும்வரை ஏன் கல்லாமல் இருக்கிறான்?"],
+[398,"ஒருமைக்கண் தான்கற்ற கல்வி ஒருவற்கு","எழுமையும் ஏமாப் புடைத்து.","ஒரு பிறவியில் கற்ற கல்வி ஏழு பிறவிக்கும் துணை நிற்கும்."],
+[400,"கேடில் விழுச்செல்வம் கல்வி யொருவற்கு","மாடல்ல மற்றை யவை.","அழியாத சிறந்த செல்வம் கல்வியே; மற்றவை செல்வம் அல்ல."],
+[411,"செல்வத்துட் செல்வஞ் செவிச்செல்வம் அச்செல்வம்","செல்வத்துள் எல்லாம் தலை.","கேள்வியால் பெறும் அறிவே செல்வங்களில் தலை சிறந்தது."],
+[423,"எப்பொருள் யார்யார்வாய்க் கேட்பினும் அப்பொருள்","மெய்ப்பொருள் காண்பது அறிவு.","யார் சொன்னாலும் அதன் உண்மைப் பொருளை அறிவதே அறிவு."],
+[426,"எவ்வது உறைவது உலகம் உலகத்தோடு","அவ்வது உறைவது அறிவு.","உலகம் செல்லும் வழியோடு இணைந்து வாழ்வதே அறிவு."],
+[595,"வெள்ளத் தனைய மலர்நீட்டம் மாந்தர்தம்","உள்ளத் தனையது உயர்வு.","நீர்மட்டம் அளவே தாமரைத் தண்டு; உள்ளத்தின் அளவே உயர்வு."],
+[616,"முயற்சி திருவினை ஆக்கும் முயற்றின்மை","இன்மை புகுத்தி விடும்.","முயற்சி செல்வம் தரும்; முயலாமை வறுமை தரும்."],
+[619,"தெய்வத்தான் ஆகா தெனினும் முயற்சிதன்","மெய்வருத்தக் கூலி தரும்.","விதியால் முடியாவிட்டாலும், உழைப்புக்கு உரிய பலன் கிடைக்கும்."],
+[620,"ஊழையும் உப்பக்கம் காண்பர் உலைவின்றித்","தாழாது உஞற்று பவர்.","சோர்வின்றி இடைவிடாது முயல்வோர் விதியையும் வெல்வர்."],
+[621,"இடுக்கண் வருங்கால் நகுக அதனை","அடுத்தூர்வது அஃதொப்பது இல்.","துன்பம் வரும்போது சிரி; அதை வெல்ல அதுபோல் வழி இல்லை."],
+[664,"சொல்லுதல் யார்க்கும் எளிய அரியவாம்","சொல்லிய வண்ணம் செயல்.","சொல்வது எளிது; சொன்னபடி செய்வதே அரிது."],
+[666,"எண்ணிய எண்ணியாங் கெய்துப எண்ணியார்","திண்ணிய ராகப் பெறின்.","எண்ணியவர் உறுதியுடன் இருந்தால் எண்ணியதை அடைவர்."],
+[788,"உடுக்கை இழந்தவன் கைபோல ஆங்கே","இடுக்கண் களைவதாம் நட்பு.","உடை நழுவும்போது கை தாங்குவதுபோல், துன்பத்தில் உதவுவதே நட்பு."],
+[972,"பிறப்பொக்கும் எல்லா உயிர்க்கும் சிறப்பொவ்வா","செய்தொழில் வேற்றுமை யான்.","பிறப்பால் எல்லாரும் சமம்; செய்யும் தொழிலால் சிறப்பு வேறுபடும்."],
+[1031,"சுழன்றும் ஏர்ப்பின்னது உலகம் அதனால்","உழந்தும் உழவே தலை.","உலகம் உழவரின் பின்னே சுழல்கிறது; எனவே உழவே தலை."]
+];
+function renderKural(){
+  const d=new Date(),k=KURAL[Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5)%KURAL.length];
+  $("k-no").textContent="(குறள் "+k[0]+")";$("k-text").innerHTML="";
+  $("k-text").append(k[1],document.createElement("br"),k[2]);$("k-mean").textContent="பொருள்: "+k[3];
+}
+
+/* ----- Nav hover flyout menus ----- */
+let nvTimer=null;
+function nvClose(except){Q(".nv.open").forEach(n=>{if(n!==except){n.classList.remove("open");n.querySelector(".tab").setAttribute("aria-expanded","false")}})}
+function nvCur(g){
+  const pn=Q(".panel.on")[0],id=pn?pn.id:"";
+  if(g==="study"){
+    if(id==="p-syl")return"syl:"+exam;
+    if(id==="p-tgt")return"tgt:"+((Q("#tgt-tabs .tab.on")[0]||{dataset:{}}).dataset.t||"m");
+    if(id==="p-att")return"att:"+((Q("#att-tabs .tab.on")[0]||{dataset:{}}).dataset.a||"a");
+    return"";
+  }
+  if(g==="health")return id==="p-gym"?((Q("#gym-tabs .tab.on")[0]||{dataset:{}}).dataset.g||""):"";
+  return id==="p-fin"?finTab:"";
+}
+function nvFillExams(){
+  const box=$("fly-exams");box.innerHTML="";
+  if(!user)return;
+  USERS[user].exams.forEach(k=>{
+    const b=document.createElement("button");b.type="button";b.className="fi";b.setAttribute("role","menuitem");
+    b.dataset.v="syl:"+k;b.textContent=EX[k].label;box.appendChild(b);
+  });
+}
+function nvOpen(nv){
+  clearTimeout(nvTimer);nvClose(nv);
+  if(nv.dataset.g==="study")nvFillExams();
+  const cur=nvCur(nv.dataset.g);
+  nv.querySelectorAll(".fi").forEach(b=>b.classList.toggle("on",b.dataset.v===cur));
+  nv.classList.add("open");nv.querySelector(".tab").setAttribute("aria-expanded","true");
+}
+let nvHover=null;
+Q(".nv").forEach(nv=>{
+  const tab=nv.querySelector(".tab");
+  tab.setAttribute("aria-haspopup","true");tab.setAttribute("aria-expanded","false");
+  tab.addEventListener("pointerdown",e=>{nv._pt=e.pointerType});
+  /* mouse: cursor on the item opens its menu */
+  nv.addEventListener("pointerenter",e=>{
+    if(e.pointerType!=="mouse")return;
+    clearTimeout(nvTimer);clearTimeout(nvHover);
+    nvHover=setTimeout(()=>nvOpen(nv),90);
+  });
+  nv.addEventListener("pointerleave",e=>{
+    if(e.pointerType!=="mouse")return;
+    clearTimeout(nvHover);
+    nvTimer=setTimeout(()=>nvClose(),180);
+  });
+  /* touch / pen: tapping the item also opens its menu */
+  tab.addEventListener("click",e=>{
+    if(nv._pt&&nv._pt!=="mouse"){e.stopPropagation();nvOpen(nv)}
+    nv._pt=null;
+  });
+  /* keyboard: Arrow Down opens the menu and moves into it */
+  tab.addEventListener("keydown",e=>{
+    if(e.key==="ArrowDown"){e.preventDefault();nvOpen(nv);const f=nv.querySelector(".fi");if(f)f.focus()}
+  });
+  nv.querySelector(".fly").addEventListener("click",e=>{
+    const b=e.target.closest(".fi");if(!b)return;
+    const g=nv.dataset.g,v=b.dataset.v;
+    if(g==="study"){
+      const [w,k]=v.split(":");
+      if(w==="syl"){exam=k;showTab("p-syl");renderExamTabs();renderSyl()}
+      else if(w==="tgt"){showTab("p-tgt");setTgtTab(k)}
+      else{showTab("p-att");setAttTab(k)}
+    }
+    else if(g==="health"){showTab("p-gym");setGymTab(v)}
+    else{showTab("p-fin");setFinTab(v)}
+    nvClose();
+  });
+});
+document.addEventListener("click",()=>nvClose());
+document.addEventListener("keydown",e=>{if(e.key==="Escape")nvClose()});
+
+/* ----- Theme: Dark / Light mode ----- */
+function applyTheme(t){
+  document.body.dataset.theme=t;
+  const dark=t!=="light",lbl=dark?"Light mode-க்கு மாறு":"Dark mode-க்கு மாறு";
+  const b=$("theme-fab");
+  b.textContent=dark?"☀️":"🌙";b.title=lbl;b.setAttribute("aria-label",lbl);
+  try{localStorage.setItem("theme",t)}catch(e){}
+}
+function toggleTheme(){applyTheme(document.body.dataset.theme==="light"?"dark":"light")}
+$("theme-fab").onclick=toggleTheme;
+applyTheme(document.body.dataset.theme==="light"?"light":"dark");
+
+/* ----- Midnight reset + live clock ----- */
+function ensureToday(){const k=dk(new Date());if(S.daily&&S.daily.d===k)return false;S.daily={d:k,done:{},gym:{},care:{}};return true}
+function tick(){
+  const d=new Date();
+  $("clk-time").textContent=d.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:true}).toUpperCase();
+  $("clk-date").textContent=d.toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
+  $("clk-day").textContent=d.toLocaleDateString("en-US",{weekday:"long"});
+  if(!user)return;
+  checkRem();
+  if(ensureToday()){
+    setDate();save();renderPlan();renderGym();renderCare();gtY=null;renderGTrack();updStudy();renderTgt();aY=null;aSel=null;renderAtt();
+    renderKural();
+    if($("p-home").classList.contains("on"))renderHome();
+    toast("🌅 புது நாள்! Study hours & Gym reset ஆச்சு");
+  }
+  markNow(d.getHours());
+}
+tick();setInterval(tick,1000);
+</script>
+</body>
+</html>
